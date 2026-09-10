@@ -27,10 +27,16 @@ jobs:
 
       - name: Check project structure
         run: |
-          pwd
           echo "=== ROOT ==="
+          pwd
           ls -la
-          echo "=== FILES ==="
+          echo "=== SETTINGS ==="
+          ls -la settings.gradle
+          echo "=== BUILD ==="
+          ls -la build.gradle
+          echo "=== APP ==="
+          ls -la app
+          echo "=== ALL FILES ==="
           find . -maxdepth 6 -type f | sort
 
       - name: Build UDAAN AI APK
