@@ -25,11 +25,13 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Check project files
+      - name: Check project structure
         run: |
           pwd
+          echo "=== ROOT ==="
           ls -la
-          find . -maxdepth 3 -type f | sort
+          echo "=== FILES ==="
+          find . -maxdepth 6 -type f | sort
 
       - name: Build UDAAN AI APK
         run: |
