@@ -1,0 +1,85 @@
+{
+    "app_name": "Udaan AI",
+    "theme": {
+        "mode": "dark",
+        "style": "futuristic",
+        "design": "3D-inspired",
+        "primary_effect": "neon_glow",
+        "background": "deep_space",
+        "central_element": "AI_CORE_ORB"
+    },
+    "home_screen": {
+        "title": "Udaan AI",
+        "central_core": true,
+        "core_label": "UDAAN AI",
+        "agent_connections": true,
+        "quick_command": true,
+        "status_indicator": true
+    },
+    "navigation": [
+        "Home",
+        "Command Center",
+        "AI Agents",
+        "Tasks",
+        "Content",
+        "Video Studio",
+        "Social Media",
+        "YouTube",
+        "Analytics",
+        "Developer AI",
+        "Automation",
+        "Settings"
+    ],
+    "ai_core": {
+        "name": "Main AI",
+        "role": "Orchestrator",
+        "features": [
+            "Command Routing",
+            "Agent Matching",
+            "Gemini Intelligence",
+            "Memory",
+            "Task Management",
+            "Founder Approval"
+        ]
+    },
+    "agents": [
+        "Research AI",
+        "Content AI",
+        "Video AI",
+        "YouTube AI",
+        "Social AI",
+        "Analytics AI",
+        "Marketing AI",
+        "Developer AI",
+        "Automation AI",
+        "Creative AI"
+    ],
+    "visual_components": [
+        "Glowing AI Orb",
+        "3D Agent Cards",
+        "Neon Status Indicators",
+        "Animated Connections",
+        "Glass Panels",
+        "Floating Navigation",
+        "Task Progress Cards",
+        "Approval Cards",
+        "Analytics Cards"
+    ],
+    "founder_controls": [
+        "Approve",
+        "Reject",
+        "Pause",
+        "Resume",
+        "Execute",
+        "Publish"
+    ],
+    "future_features": [
+        "3D Animations",
+        "Voice Command",
+        "Video Studio",
+        "Live Analytics",
+        "Social Publishing",
+        "AI Agent Visualization"
+    ],
+    "created_at": "2026-09-08 07:46:07"
+}

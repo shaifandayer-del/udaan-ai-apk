@@ -1,0 +1,106 @@
+{
+    "app": {
+        "name": "Udaan AI",
+        "version": "1.0",
+        "style": "Futuristic 3D"
+    },
+    "background": {
+        "type": "deep_space",
+        "layers": [
+            "dark_background",
+            "soft_gradient",
+            "ambient_glow",
+            "particle_field"
+        ]
+    },
+    "ai_core": {
+        "shape": "orb",
+        "style": "3D_glowing",
+        "states": {
+            "idle": {
+                "glow": "soft",
+                "animation": "slow_pulse"
+            },
+            "thinking": {
+                "glow": "medium",
+                "animation": "rotation"
+            },
+            "working": {
+                "glow": "strong",
+                "animation": "energy_flow"
+            },
+            "success": {
+                "glow": "bright",
+                "animation": "pulse"
+            },
+            "error": {
+                "glow": "warning",
+                "animation": "shake"
+            }
+        }
+    },
+    "cards": {
+        "style": "glass_3d",
+        "corner_radius": "large",
+        "depth": "medium",
+        "shadow": "soft_glow",
+        "agent_card": {
+            "icon": true,
+            "name": true,
+            "status": true,
+            "action": true
+        }
+    },
+    "navigation": {
+        "style": "floating",
+        "position": "bottom",
+        "items": 5,
+        "animation": "slide"
+    },
+    "effects": [
+        "glow",
+        "blur",
+        "depth",
+        "parallax",
+        "particles",
+        "pulse",
+        "floating"
+    ],
+    "screens": {
+        "home": {
+            "main": "AI_CORE",
+            "secondary": "QUICK_COMMAND"
+        },
+        "command_center": {
+            "main": "COMMAND_INPUT",
+            "secondary": "LIVE_RESPONSE"
+        },
+        "agents": {
+            "main": "AGENT_GRID",
+            "secondary": "AGENT_STATUS"
+        },
+        "tasks": {
+            "main": "TASK_CARDS",
+            "secondary": "PROGRESS"
+        },
+        "video_studio": {
+            "main": "VIDEO_WORKSPACE",
+            "secondary": "VIDEO_TIMELINE"
+        },
+        "analytics": {
+            "main": "ANALYTICS_DASHBOARD",
+            "secondary": "METRICS"
+        },
+        "approval": {
+            "main": "FOUNDER_APPROVAL",
+            "secondary": "APPROVE_REJECT"
+        }
+    },
+    "responsive": {
+        "mobile": true,
+        "tablet": true,
+        "landscape": true,
+        "portrait": true
+    },
+    "created_at": "2026-09-08 07:48:42"
+}

@@ -1,0 +1,433 @@
+{
+    "timestamp": "2026-09-08T13:53:27.755961",
+    "groups": {
+        "CORE": [
+            {
+                "name": "UdaanCore",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "UdaanCore",
+                    "UdaanCoreVisual",
+                    "failed_result",
+                    "get_core_state",
+                    "pending_result",
+                    "process_command",
+                    "run_agent",
+                    "success_result"
+                ]
+            },
+            {
+                "name": "UdaanRouter",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "process_command",
+                    "run_agent",
+                    "select_agent"
+                ]
+            },
+            {
+                "name": "AgentConnector",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "add_execution_log",
+                    "failed_result",
+                    "find_agent_function",
+                    "load_agent",
+                    "run_agent",
+                    "save_log",
+                    "setup_database",
+                    "success_result"
+                ]
+            },
+            {
+                "name": "AgentRegistry",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "check_agent",
+                    "get_agents",
+                    "show_agents"
+                ]
+            },
+            {
+                "name": "AgentManager",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "check_agent",
+                    "get_agent_status",
+                    "get_agents",
+                    "list_agents",
+                    "show_agent_manager"
+                ]
+            },
+            {
+                "name": "SmartAgentMatcher",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "explain_match",
+                    "find_agent",
+                    "get_agent_scores",
+                    "get_selected_agent",
+                    "match_agent",
+                    "normalize_command",
+                    "select_agent",
+                    "smart_match"
+                ]
+            },
+            {
+                "name": "CommandIntent",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "analyze_command",
+                    "detect_action",
+                    "detect_priority",
+                    "requires_approval",
+                    "select_agent",
+                    "show_intent"
+                ]
+            },
+            {
+                "name": "TaskManager",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "add_task",
+                    "cancel_task",
+                    "complete_task",
+                    "create_task",
+                    "fail_task",
+                    "get_tasks",
+                    "setup_database",
+                    "show_tasks",
+                    "update_task"
+                ]
+            },
+            {
+                "name": "FounderApproval",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "approve",
+                    "get_approval",
+                    "get_approval_from_db",
+                    "get_pending_approvals",
+                    "get_pending_approvals_db",
+                    "reject",
+                    "request_approval",
+                    "save_approval",
+                    "update_approval_status"
+                ]
+            },
+            {
+                "name": "ApprovalDatabase",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "get_approval_from_db",
+                    "get_connection",
+                    "get_pending_approvals_db",
+                    "save_approval",
+                    "setup_approval_table",
+                    "update_approval_status"
+                ]
+            },
+            {
+                "name": "UdaanDatabase",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "add_approval",
+                    "add_execution_log",
+                    "add_task",
+                    "connect",
+                    "get_approvals",
+                    "get_execution_logs",
+                    "get_tasks",
+                    "setup_database",
+                    "update_approval",
+                    "update_task"
+                ]
+            },
+            {
+                "name": "UdaanMemory",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "get_memories",
+                    "save_memory",
+                    "show_memories"
+                ]
+            },
+            {
+                "name": "UdaanHistory",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "get_execution_logs",
+                    "setup_database",
+                    "show_history"
+                ]
+            },
+            {
+                "name": "ExecutionLogs",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "display_logs",
+                    "get_execution_logs",
+                    "history",
+                    "setup_database",
+                    "show_execution_logs",
+                    "show_logs"
+                ]
+            },
+            {
+                "name": "AgentResult",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "failed_result",
+                    "pending_result",
+                    "show_result",
+                    "success_result"
+                ]
+            },
+            {
+                "name": "GeminiBrain",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "ask_gemini"
+                ]
+            },
+            {
+                "name": "UdaanSecurity",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "generate_api_key",
+                    "security_status",
+                    "show_security_status",
+                    "validate_api_key"
+                ]
+            },
+            {
+                "name": "UdaanStatus",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "check_agents",
+                    "check_database",
+                    "check_modules",
+                    "show_status"
+                ]
+            },
+            {
+                "name": "UdaanAPI",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "BaseHTTPRequestHandler",
+                    "HTTPServer",
+                    "UdaanAPIHandler",
+                    "execute_command",
+                    "get_command_center_status",
+                    "start_server"
+                ]
+            },
+            {
+                "name": "UdaanCommandCenter",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "UdaanCommandCenter",
+                    "execute_command",
+                    "get_command_center_status",
+                    "get_core_state",
+                    "process_command"
+                ]
+            }
+        ],
+        "AGENTS": [
+            {
+                "name": "Research",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "execute",
+                    "handle",
+                    "process",
+                    "research",
+                    "run"
+                ]
+            },
+            {
+                "name": "Content",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "execute",
+                    "generate_content",
+                    "handle",
+                    "process",
+                    "run"
+                ]
+            },
+            {
+                "name": "Video",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "execute",
+                    "generate_video",
+                    "handle",
+                    "process",
+                    "run",
+                    "setup_video_folder"
+                ]
+            },
+            {
+                "name": "YouTube",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "execute",
+                    "handle",
+                    "process",
+                    "run",
+                    "youtube_task"
+                ]
+            },
+            {
+                "name": "Social",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "execute",
+                    "handle",
+                    "process",
+                    "run",
+                    "social_task"
+                ]
+            },
+            {
+                "name": "Analytics",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "analytics_task",
+                    "execute",
+                    "handle",
+                    "process",
+                    "run"
+                ]
+            },
+            {
+                "name": "Marketing",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "execute",
+                    "handle",
+                    "marketing_task",
+                    "process",
+                    "run"
+                ]
+            },
+            {
+                "name": "Developer",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "developer_task",
+                    "execute",
+                    "handle",
+                    "process",
+                    "run"
+                ]
+            },
+            {
+                "name": "Automation",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "automation_task",
+                    "execute",
+                    "handle",
+                    "process",
+                    "run"
+                ]
+            },
+            {
+                "name": "Creative",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "creative_task",
+                    "execute",
+                    "handle",
+                    "process",
+                    "run"
+                ]
+            }
+        ],
+        "VIDEO": [
+            {
+                "name": "VideoPreview",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "create_preview",
+                    "get_preview",
+                    "request_approval"
+                ]
+            },
+            {
+                "name": "VideoApprovalController",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "VideoApprovalController",
+                    "approve",
+                    "approve_video",
+                    "create_preview",
+                    "create_video_for_approval",
+                    "get_approval",
+                    "reject",
+                    "reject_video"
+                ]
+            },
+            {
+                "name": "VideoShareController",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "VideoShareController",
+                    "datetime",
+                    "get_share_package",
+                    "prepare_video_share"
+                ]
+            },
+            {
+                "name": "AndroidShareBridge",
+                "status": "ONLINE",
+                "error": null,
+                "functions": [
+                    "AndroidShareBridge",
+                    "prepare_video_share"
+                ]
+            }
+        ]
+    },
+    "total": 34,
+    "online": 34,
+    "errors": 0,
+    "health_percent": 100.0,
+    "overall_status": "HEALTHY"
+}
