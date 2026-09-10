@@ -26,15 +26,15 @@ jobs:
           gradle-version: '8.7'
 
       - name: Check project files
-  run: |
-    pwd
-    ls -la
-    find . -maxdepth 3 -type f | sort
+        run: |
+          pwd
+          ls -la
+          find . -maxdepth 3 -type f | sort
 
-- name: Build UDAAN AI APK
-  run: |
-    gradle --stop
-    gradle assembleDebug --stacktrace
+      - name: Build UDAAN AI APK
+        run: |
+          gradle --stop
+          gradle assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
