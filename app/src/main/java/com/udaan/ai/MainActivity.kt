@@ -472,96 +472,161 @@ class MainActivity : Activity() {
         )
     }
 
-    private fun sendCommand() {
+   private fun sendCommand() {
 
-        val command =
-            commandInput.text.toString().trim()
+    val command =
+        commandInput.text.toString().trim()
 
-        if (command.isEmpty()) {
+    if (command.isEmpty()) {
 
-            Toast.makeText(
-                this,
-                "Founder command empty hai",
-                Toast.LENGTH_SHORT
-            ).show()
+        Toast.makeText(
+            this,
+            "Founder command empty hai",
+            Toast.LENGTH_SHORT
+        ).show()
 
-            return
-        }
-
-        statusText.text =
-            "UDAAN AI\n\nProcessing..."
-
-        Thread {
-
-            try {
-
-                val json =
-                    JSONObject()
-                        .put(
-                            "command",
-                            command
-                        )
-
-                val body =
-                    json.toString()
-                        .toRequestBody(
-                            "application/json"
-                                .toMediaType()
-                        )
-
-                val request =
-                    Request.Builder()
-                        .url(
-                            "$backendUrl/command"
-                        )
-                        .addHeader(
-                            "X-Udaan-API-Key",
-                            founderApiKey
-                        )
-                        .post(body)
-                        .build()
-
-                client
-                    .newCall(request)
-                    .execute()
-                    .use { response ->
-
-                        val result =
-                            response.body
-                                ?.string()
-                                ?: ""
-
-                        runOnUiThread {
-
-                            statusText.text =
-                                if (response.isSuccessful) {
-
-                                    "UDAAN AI RESPONSE\n\n$result"
-
-                                } else {
-
-                                    "BACKEND ERROR\n\n" +
-                                            "HTTP ${response.code}\n" +
-                                            result
-                                }
-                        }
-                    }
-
-            } catch (error: Exception) {
-
-                runOnUiThread {
-
-                    statusText.text =
-                        "BACKEND CONNECTION FAILED\n\n" +
-                                "${error.message}"
-                }
-            }
-        }.start()
+        return
     }
 
-    // ==========================================
-    // PENDING APPROVALS
-    // ==========================================
+    statusText.text =
+        "🧠 UDAAN AI\n\nThinking..."
+
+    Thread {
+
+        try {
+
+            val json =
+                JSONObject()
+                    .put("command", command)
+
+            val body =
+                json.toString()
+                    .toRequestBody(
+                        "application/json".toMediaType()
+                    )
+
+            val request =
+                Request.Builder()
+                    .url("$backendUrl/command")
+                    .addHeader(
+                        "X-Udaan-API-Key",
+                        founderApiKey
+                    )
+                    .post(body)
+                    .build()
+
+            client.newCall(request)
+                .execute()
+                .use { response ->
+
+                    val result =
+                        response.body?.string() ?: ""
+
+                    runOnUiThread {
+
+                        if (!response.isSuccessful) {
+
+                            statusText.text =
+                                "❌ BACKEND ERROR\n\n" +
+                                "HTTP ${response.code}\n\n" +
+                                result
+
+                            return@runOnUiThread
+                        }
+
+                        try {
+
+                            val jsonResult =
+                                JSONObject(result)
+
+                            val status =
+                                jsonResult.optString(
+                                    "status",
+                                    "UNKNOWN"
+                                )
+
+                            val agent =
+                                jsonResult.optString(
+                                    "agent",
+                                    "Main AI"
+                                )
+
+                            val message =
+                                jsonResult.optString(
+                                    "message",
+                                    result
+                                )
+
+                            when (status) {
+
+                                "SUCCESS" -> {
+
+                                    statusText.text =
+                                        "✅ UDAAN AI\n\n" +
+                                        "STATUS: SUCCESS\n\n" +
+                                        "Agent: $agent\n\n" +
+                                        message
+                                }
+
+                                "PENDING_APPROVAL",
+                                "WAITING_APPROVAL",
+                                "READY_FOR_APPROVAL" -> {
+
+                                    val approvalId =
+                                        jsonResult.optString(
+                                            "approval_id",
+                                            ""
+                                        )
+
+                                    statusText.text =
+                                        "👑 FOUNDER APPROVAL REQUIRED\n\n" +
+                                        "Agent: $agent\n\n" +
+                                        message +
+                                        if (approvalId.isNotEmpty()) {
+                                            "\n\nApproval ID:\n$approvalId"
+                                        } else {
+                                            ""
+                                        }
+                                }
+
+                                "FAILED" -> {
+
+                                    statusText.text =
+                                        "❌ UDAAN AI\n\n" +
+                                        "STATUS: FAILED\n\n" +
+                                        message
+                                }
+
+                                else -> {
+
+                                    statusText.text =
+                                        "🤖 UDAAN AI RESPONSE\n\n" +
+                                        "STATUS: $status\n\n" +
+                                        "Agent: $agent\n\n" +
+                                        message
+                                }
+                            }
+
+                        } catch (error: Exception) {
+
+                            statusText.text =
+                                "🤖 UDAAN AI RESPONSE\n\n" +
+                                result
+                        }
+                    }
+                }
+
+        } catch (error: Exception) {
+
+            runOnUiThread {
+
+                statusText.text =
+                    "❌ BACKEND CONNECTION FAILED\n\n" +
+                    "${error.message}"
+            }
+        }
+    }.start()
+} 
 
     private fun loadPendingApprovals() {
 
