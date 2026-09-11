@@ -1,230 +1,94 @@
-# ==========================================
-# UDAAN AI - API SERVER
-# Founder API Key Security
-# ==========================================
-
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import json
 import os
 
-from UdaanCommandCenter import (
-    execute_command,
-    get_command_center_status
-)
+from flask import Flask, jsonify, request
+
+from UdaanCommandCenter import execute_command, get_command_center_status
+
+
+app = Flask(__name__)
 
 HOST = "0.0.0.0"
-PORT = 8080
+PORT = int(os.environ.get("PORT", "8080"))
 
-FOUNDER_API_KEY = os.environ.get(
-    "UDAAN_FOUNDER_API_KEY",
-    ""
-)
+FOUNDER_API_KEY = os.environ.get("UDAAN_FOUNDER_API_KEY", "")
 
 
-def api_status():
-    try:
-        center_status = get_command_center_status()
-    except Exception as error:
-        center_status = {
-            "status": "ERROR",
-            "error": str(error)
-        }
+def is_authorized():
+    provided_key = request.headers.get("X-Udaan-API-Key", "")
 
-    return {
-        "app": "Udaan AI",
-        "module": "UdaanAPI",
-        "status": "ONLINE",
-        "host": HOST,
-        "port": PORT,
-        "command_center": center_status
-    }
-
-
-def is_authorized(handler):
     if not FOUNDER_API_KEY:
         return False
-
-    provided_key = handler.headers.get(
-        "X-Udaan-API-Key",
-        ""
-    )
 
     return provided_key == FOUNDER_API_KEY
 
 
-def handle_command(command):
-    if not command:
-        return {
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({
+        "system": "UDAAN AI",
+        "status": "ONLINE",
+        "message": "UDAAN AI API is running."
+    })
+
+
+@app.route("/status", methods=["GET"])
+def status():
+    if not is_authorized():
+        return jsonify({
+            "status": "UNAUTHORIZED",
+            "message": "Founder API Key required."
+        }), 401
+
+    return jsonify(get_command_center_status())
+
+
+@app.route("/command", methods=["POST"])
+def command():
+    if not is_authorized():
+        return jsonify({
+            "status": "UNAUTHORIZED",
+            "message": "Founder API Key required."
+        }), 401
+
+    data = request.get_json(silent=True) or {}
+    founder_command = str(data.get("command", "")).strip()
+
+    if not founder_command:
+        return jsonify({
             "status": "FAILED",
-            "message": "Command is empty."
-        }
+            "message": "Command empty hai."
+        }), 400
 
     try:
-        result = execute_command(command)
-
-        return {
-            "status": "SUCCESS",
-            "command": command,
-            "result": result
-        }
-
+        result = execute_command(founder_command)
+        return jsonify(result)
     except Exception as error:
-        return {
+        return jsonify({
             "status": "FAILED",
-            "command": command,
+            "message": "UDAAN command execution failed.",
             "error": str(error)
-        }
+        }), 500
 
 
-class UdaanAPIHandler(BaseHTTPRequestHandler):
-
-    def send_json(self, data, status=200):
-        body = json.dumps(
-            data,
-            ensure_ascii=False,
-            default=str
-        ).encode("utf-8")
-
-        self.send_response(status)
-
-        self.send_header(
-            "Content-Type",
-            "application/json; charset=utf-8"
-        )
-
-        self.send_header(
-            "Content-Length",
-            str(len(body))
-        )
-
-        self.end_headers()
-        self.wfile.write(body)
-
-    def do_GET(self):
-
-        if self.path == "/":
-            self.send_json({
-                "name": "Udaan AI API",
-                "status": "ONLINE",
-                "service": "Command Center"
-            })
-            return
-
-        if self.path == "/status":
-
-            if not is_authorized(self):
-                self.send_json({
-                    "status": "UNAUTHORIZED",
-                    "message": "Founder API key required."
-                }, 401)
-                return
-
-            self.send_json(api_status())
-            return
-
-        self.send_json({
-            "error": "Endpoint not found"
-        }, 404)
-
-    def do_POST(self):
-
-        if self.path != "/command":
-            self.send_json({
-                "error": "Endpoint not found"
-            }, 404)
-            return
-
-        if not is_authorized(self):
-            self.send_json({
-                "status": "UNAUTHORIZED",
-                "message": "Founder API key required."
-            }, 401)
-            return
-
-        try:
-
-            content_length = int(
-                self.headers.get(
-                    "Content-Length",
-                    0
-                )
-            )
-
-            raw_data = self.rfile.read(
-                content_length
-            )
-
-            data = json.loads(
-                raw_data.decode("utf-8")
-            )
-
-            command = data.get(
-                "command",
-                ""
-            )
-
-            result = handle_command(
-                command
-            )
-
-            self.send_json(result)
-
-        except Exception as error:
-
-            self.send_json({
-                "status": "FAILED",
-                "message": "API request failed.",
-                "error": str(error)
-            }, 500)
-
-    def log_message(self, format, *args):
-        print(
-            "🌐 API:",
-            format % args
-        )
-
-
-def start_server():
-
-    server = HTTPServer(
-        (HOST, PORT),
-        UdaanAPIHandler
-    )
-
-    print()
-    print("=" * 60)
-    print("             UDAAN AI API SERVER")
-    print("=" * 60)
-
-    print()
-    print("🟢 Server :", "ONLINE")
-    print("📡 Host   :", HOST)
-    print("🔌 Port   :", PORT)
-
-    print()
-    print("🔐 Founder API Key :", "ENABLED")
-
-    print()
-    print("Endpoints:")
-    print("GET  /")
-    print("GET  /status")
-    print("POST /command")
-
-    print()
-    print("Press CTRL+C to stop.")
-    print("=" * 60)
-
-    try:
-        server.serve_forever()
-
-    except KeyboardInterrupt:
-
-        print()
-        print("🛑 Server stopping...")
-
-    finally:
-        server.server_close()
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({
+        "system": "UDAAN AI",
+        "status": "HEALTHY"
+    })
 
 
 if __name__ == "__main__":
-    start_server()
+    print("=" * 60)
+    print("             UDAAN AI API")
+    print("=" * 60)
+    print(f"Host : {HOST}")
+    print(f"Port : {PORT}")
+    print("API  : ONLINE")
+    print("=" * 60)
+
+    app.run(
+        host=HOST,
+        port=PORT,
+        debug=False
+    )
