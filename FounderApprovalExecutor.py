@@ -1,7 +1,16 @@
+# ==========================================
+# UDAAN AI - FOUNDER APPROVAL EXECUTOR
+# STEP 98
+# ==========================================
+
 from FounderApproval import (
     get_approval,
     approve,
     reject
+)
+
+from ApprovalExecutor import (
+    execute_approved_action
 )
 
 
@@ -34,9 +43,24 @@ class FounderApprovalExecutor:
 
     def execute_approved_action(self, approval):
 
+        approval_status = approval.get(
+            "status"
+        )
+
+        if approval_status != "APPROVED":
+
+            return {
+                "status": "FAILED",
+                "message": (
+                    "Only APPROVED requests "
+                    "can be executed."
+                )
+            }
+
         action = approval.get("action")
         platform = approval.get("platform")
         file_path = approval.get("file_path")
+        command = approval.get("command")
 
         if not action:
 
@@ -45,24 +69,68 @@ class FounderApprovalExecutor:
                 "message": "Action missing."
             }
 
-        # IMPORTANT:
-        # Real upload/publish integrations will be
-        # connected later.
-        #
-        # This gate guarantees that only an APPROVED
-        # request reaches the execution layer.
+        # --------------------------------------
+        # COMMAND REQUIRED
+        # --------------------------------------
 
-        return {
-            "status": "APPROVED_FOR_EXECUTION",
-            "approval_id":
-                approval.get("approval_id"),
-            "action": action,
-            "platform": platform,
-            "file_path": file_path,
-            "message":
-                "Founder approval verified. "
-                "Action is ready for the real executor."
-        }
+        if not command:
+
+            return {
+                "status": "FAILED",
+                "approval_id": approval.get(
+                    "approval_id"
+                ),
+                "action": action,
+                "message": (
+                    "Approved action has no "
+                    "execution command."
+                )
+            }
+
+        # --------------------------------------
+        # REAL APPROVED EXECUTION
+        # --------------------------------------
+
+        try:
+
+            result = execute_approved_action(
+                approval.get(
+                    "agent",
+                    "Main AI"
+                ),
+                command
+            )
+
+            return {
+                "status": "EXECUTED",
+                "approval_id": approval.get(
+                    "approval_id"
+                ),
+                "action": action,
+                "platform": platform,
+                "file_path": file_path,
+                "command": command,
+                "result": result,
+                "message": (
+                    "Founder approval verified "
+                    "and approved action sent "
+                    "to execution layer."
+                )
+            }
+
+        except Exception as error:
+
+            return {
+                "status": "FAILED",
+                "approval_id": approval.get(
+                    "approval_id"
+                ),
+                "action": action,
+                "message": (
+                    "Approved action execution failed."
+                ),
+                "error": str(error)
+            }
 
 
 _executor = FounderApprovalExecutor()
@@ -84,7 +152,9 @@ def reject_request(approval_id):
 
 if __name__ == "__main__":
 
-    from FounderApproval import request_approval
+    from FounderApproval import (
+        request_approval
+    )
 
     print()
     print("=" * 60)
@@ -96,10 +166,16 @@ if __name__ == "__main__":
         platform="YouTube",
         file_path="udaan_videos/demo.mp4",
         title="Udaan AI Demo",
-        description="Founder approval test"
+        description="Founder approval test",
+        command="YouTube ke liye video publish karo",
+        metadata={
+            "source": "Founder Approval Test"
+        }
     )
 
-    approval_id = request["approval_id"]
+    approval_id = request[
+        "approval_id"
+    ]
 
     print()
     print("🆔 Approval ID:", approval_id)
@@ -118,5 +194,5 @@ if __name__ == "__main__":
 
     print()
     print("=" * 60)
-    print("✅ APPROVAL GATE TEST COMPLETE")
+    print("✅ APPROVAL EXECUTION BRIDGE READY")
     print("=" * 60)
