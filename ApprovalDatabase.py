@@ -31,12 +31,33 @@ def setup_approval_table():
 
             description TEXT,
 
+            command TEXT,
+
+            agent TEXT,
+
             status TEXT,
 
             created_at REAL
 
         )
     """)
+
+    connection.commit()
+
+    # Existing database ko safely upgrade karne ke liye
+    columns = [
+        ("command", "TEXT"),
+        ("agent", "TEXT")
+    ]
+
+    for column_name, column_type in columns:
+
+        try:
+            cursor.execute(
+                f"ALTER TABLE approval_requests ADD COLUMN {column_name} {column_type}"
+            )
+        except sqlite3.OperationalError:
+            pass
 
     connection.commit()
     connection.close()
@@ -58,10 +79,12 @@ def save_approval(approval):
             file_path,
             title,
             description,
+            command,
+            agent,
             status,
             created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
 
         approval.get("approval_id"),
@@ -70,6 +93,8 @@ def save_approval(approval):
         approval.get("file_path"),
         approval.get("title"),
         approval.get("description"),
+        approval.get("command"),
+        approval.get("agent"),
         approval.get("status"),
         time.time()
 
@@ -126,6 +151,8 @@ def get_approval_from_db(
             file_path,
             title,
             description,
+            command,
+            agent,
             status,
             created_at
         FROM approval_requests
@@ -148,8 +175,10 @@ def get_approval_from_db(
         "file_path": row[3],
         "title": row[4],
         "description": row[5],
-        "status": row[6],
-        "created_at": row[7]
+        "command": row[6],
+        "agent": row[7],
+        "status": row[8],
+        "created_at": row[9]
     }
 
 
@@ -168,6 +197,8 @@ def get_pending_approvals_db():
             file_path,
             title,
             description,
+            command,
+            agent,
             status,
             created_at
         FROM approval_requests
@@ -190,8 +221,10 @@ def get_pending_approvals_db():
             "file_path": row[3],
             "title": row[4],
             "description": row[5],
-            "status": row[6],
-            "created_at": row[7]
+            "command": row[6],
+            "agent": row[7],
+            "status": row[8],
+            "created_at": row[9]
         })
 
     return approvals
@@ -213,6 +246,8 @@ if __name__ == "__main__":
         "file_path": "udaan_videos/test.mp4",
         "title": "Udaan Test Video",
         "description": "Approval database test",
+        "command": "Upload test video to YouTube",
+        "agent": "YouTube AI",
         "status": "PENDING"
     }
 
