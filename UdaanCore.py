@@ -1,253 +1,257 @@
-# ==========================================
-# UDAAN AI - CORE
-# Central AI Execution Layer
-# STEP 95
-# ==========================================
+from AgentResult import success_result, failed_result, pending_result
+from AgentConnector import run_agent
+from UdaanCoreVisual import UdaanCoreVisual
+from FounderApproval import request_approval
 
-import importlib
-import datetime
+from UdaanDatabase import setup_database, add_task
 
 
-AGENT_MODULES = {
-    "Research AI": "Research",
-    "Content AI": "Content",
-    "Creative AI": "Creative",
-    "Video AI": "Video",
-    "Social AI": "Social",
-    "YouTube AI": "YouTube",
-    "Analytics AI": "Analytics",
-    "Marketing AI": "Marketing",
-    "Developer AI": "Developer",
-    "Automation AI": "Automation",
-}
+class UdaanCore:
 
+    def __init__(self):
+        self.visual_core = UdaanCoreVisual()
 
-KEYWORDS = {
-    "Research AI": [
-        "research", "search", "find", "trend",
-        "competitor", "information"
-    ],
+    def set_visual(self, state):
+        try:
+            self.visual_core.set_state(state)
+        except Exception:
+            pass
 
-    "Content AI": [
-        "content", "script", "article",
-        "post idea", "caption", "write"
-    ],
+    def find_agent(self, command):
 
-    "Creative AI": [
-        "creative", "thumbnail", "design",
-        "visual", "image"
-    ],
+        try:
 
-    "Video AI": [
-        "video", "reel", "short", "editing"
-    ],
+            import SmartAgentMatcher
 
-    "Social AI": [
-        "instagram", "facebook",
-        "social media", "social"
-    ],
+            functions = [
+                "get_selected_agent",
+                "select_agent",
+                "find_agent",
+                "smart_match",
+                "match",
+                "match_agent"
+            ]
 
-    "YouTube AI": [
-        "youtube", "youtube video",
-        "youtube channel", "upload"
-    ],
+            for function_name in functions:
 
-    "Analytics AI": [
-        "analytics", "views",
-        "retention", "performance",
-        "report", "data"
-    ],
+                function = getattr(
+                    SmartAgentMatcher,
+                    function_name,
+                    None
+                )
 
-    "Marketing AI": [
-        "marketing", "campaign",
-        "growth", "promotion"
-    ],
+                if callable(function):
 
-    "Developer AI": [
-        "developer", "coding",
-        "code", "app banao",
-        "app bana", "android app",
-        "software", "software banao",
-        "website banao", "build app",
-        "create app", "bug", "debug"
-    ],
+                    try:
 
-    "Automation AI": [
-        "automation", "automate",
-        "automatic", "repeat"
-    ],
-}
+                        result = function(command)
 
+                        if result:
 
-def get_core_state():
+                            if isinstance(result, dict):
 
-    return {
-        "system": "UDAAN AI CORE",
-        "status": "ONLINE",
-        "mode": "EXECUTION",
-        "timestamp": datetime.datetime.now().isoformat(),
-        "agents": list(AGENT_MODULES.keys())
-    }
+                                return (
+                                    result.get("agent")
+                                    or result.get("name")
+                                )
 
+                            return str(result)
 
-def detect_agent(command):
+                    except Exception:
+                        continue
 
-    command_lower = str(command).lower().strip()
+        except Exception:
+            pass
 
-    for agent, words in KEYWORDS.items():
+        return None
 
-        for word in words:
+    def requires_founder_approval(self, command):
 
-            if word in command_lower:
-                return agent
+        command = str(command or "").lower()
 
-    return "Main AI"
+        approval_words = [
 
+            "upload",
+            "publish",
+            "post",
+            "deploy",
+            "delete",
+            "send",
 
-def find_entry_point(module):
+            "app banao",
+            "app bana",
+            "android app",
 
-    for function_name in [
-        "execute",
-        "run",
-        "process",
-        "handle",
-        "research",
-        "generate_content",
-        "generate_creative",
-        "create_video",
-        "publish",
-        "upload",
-    ]:
+            "software banao",
+            "software bana",
 
-        function = getattr(
-            module,
-            function_name,
-            None
+            "website banao",
+            "website bana",
+
+            "build app",
+            "build software",
+
+            "create app",
+            "create software"
+        ]
+
+        return any(
+            word in command
+            for word in approval_words
         )
 
-        if callable(function):
-            return function
+    def create_pending_task(self, agent, command):
 
-    return None
+        try:
 
+            setup_database()
 
-def execute_agent(agent_name, command):
-
-    module_name = AGENT_MODULES.get(agent_name)
-
-    if not module_name:
-
-        return {
-            "status": "SUCCESS",
-            "agent": agent_name,
-            "command": command,
-            "message": "Main AI received the command."
-        }
-
-    try:
-
-        module = importlib.import_module(
-            module_name
-        )
-
-    except Exception as error:
-
-        return {
-            "status": "FAILED",
-            "agent": agent_name,
-            "command": command,
-            "message": "Agent module load failed.",
-            "error": str(error)
-        }
-
-    function = find_entry_point(module)
-
-    if not function:
-
-        return {
-            "status": "FAILED",
-            "agent": agent_name,
-            "command": command,
-            "message": "Agent function not found."
-        }
-
-    try:
-
-        result = function(command)
-
-        # Agent ka original status preserve hoga.
-        agent_status = "SUCCESS"
-
-        if isinstance(result, dict):
-
-            agent_status = result.get(
-                "status",
-                "SUCCESS"
+            task_id = add_task(
+                agent,
+                command,
+                "PENDING"
             )
 
-        return {
-            "status": agent_status,
-            "agent": agent_name,
-            "command": command,
-            "message": (
-                f"{agent_name} processed the command."
-            ),
-            "result": result
-        }
+            return task_id
 
-    except Exception as error:
+        except TypeError:
 
-        return {
-            "status": "FAILED",
-            "agent": agent_name,
-            "command": command,
-            "message": (
-                f"{agent_name} execution failed."
-            ),
-            "error": str(error)
-        }
+            try:
+
+                task_id = add_task(
+                    agent,
+                    command
+                )
+
+                return task_id
+
+            except Exception:
+                return None
+
+        except Exception:
+            return None
+
+    def process(self, command):
+
+        command = str(command or "").strip()
+
+        if not command:
+
+            return failed_result(
+                "Main AI",
+                command,
+                "Command empty hai."
+            )
+
+        self.set_visual("THINKING")
+
+        agent = self.find_agent(command)
+
+        if not agent:
+
+            self.set_visual("WORKING")
+
+            return success_result(
+                "Main AI",
+                command,
+                "Command received by Main AI."
+            )
+
+        # ==========================================
+        # FOUNDER APPROVAL FLOW
+        # ==========================================
+
+        if self.requires_founder_approval(command):
+
+            self.set_visual(
+                "WAITING_APPROVAL"
+            )
+
+            # Create task BEFORE approval
+            task_id = self.create_pending_task(
+                agent,
+                command
+            )
+
+            approval = request_approval(
+
+                action="COMMAND_EXECUTION",
+
+                title="UDAAN AI Founder Approval",
+
+                description=(
+                    "Founder approval required "
+                    "before protected action execution."
+                ),
+
+                command=command,
+
+                agent=agent,
+
+                metadata={
+                    "source": "UdaanCore",
+                    "agent": agent,
+                    "task_id": task_id
+                }
+            )
+
+            return pending_result(
+
+                agent,
+
+                command,
+
+                "Founder approval required. "
+                "Approval ID: "
+                + str(
+                    approval.get("approval_id")
+                )
+            )
+
+        # ==========================================
+        # NORMAL AGENT EXECUTION
+        # ==========================================
+
+        self.set_visual("WORKING")
+
+        result = run_agent(
+            agent,
+            command
+        )
+
+        if not isinstance(result, dict):
+
+            result = success_result(
+                agent,
+                command,
+                data=result
+            )
+
+        if result.get("status") == "FAILED":
+
+            self.set_visual("ERROR")
+
+        else:
+
+            self.set_visual("SUCCESS")
+
+        return result
+
+    def get_state(self):
+
+        try:
+            return self.visual_core.get_state()
+
+        except Exception:
+            return "UNKNOWN"
+
+
+_core = UdaanCore()
 
 
 def process_command(command):
-
-    command = str(command).strip()
-
-    if not command:
-
-        return {
-            "status": "FAILED",
-            "message": "Command empty hai.",
-            "core_state": get_core_state()
-        }
-
-    agent = detect_agent(command)
-
-    print()
-    print("[UDAAN CORE]")
-    print("Command :", command)
-    print("Agent   :", agent)
-
-    result = execute_agent(
-        agent,
-        command
-    )
-
-    result["core_state"] = get_core_state()
-
-    return result
+    return _core.process(command)
 
 
-if __name__ == "__main__":
-
-    print("=" * 60)
-    print("          UDAAN AI CORE")
-    print("=" * 60)
-
-    print(get_core_state())
-
-    command = input(
-        "\nUDAAN command: "
-    ).strip()
-
-    print()
-    print(process_command(command))
+def get_core_state():
+    return _core.get_state()
