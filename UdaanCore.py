@@ -1,209 +1,202 @@
-from AgentResult import (
-    success_result,
-    failed_result,
-    pending_result
-)
+# ==========================================
+# UDAAN AI - CORE
+# Central AI Execution Layer
+# ==========================================
 
-from AgentConnector import run_agent
-from UdaanCoreVisual import UdaanCoreVisual
-
-
-class UdaanCore:
-
-    def __init__(self):
-        self.visual_core = UdaanCoreVisual()
-
-    def set_visual(self, state):
-
-        result = self.visual_core.set_state(state)
-
-        print(
-            "🔵 CORE:",
-            result.get("state"),
-            "|",
-            result.get("label")
-        )
-
-    def find_agent(self, command):
-
-        try:
-
-            import SmartAgentMatcher
-
-            possible_functions = [
-                "get_selected_agent",
-                "select_agent",
-                "find_agent",
-                "smart_match",
-                "match",
-                "match_agent"
-            ]
-
-            for function_name in possible_functions:
-
-                function = getattr(
-                    SmartAgentMatcher,
-                    function_name,
-                    None
-                )
-
-                if callable(function):
-
-                    try:
-                        result = function(command)
-
-                        if result:
-                            return result
-
-                    except Exception:
-                        continue
-
-            return None
-
-        except Exception as error:
-
-            print(
-                "⚠️ Smart Agent Matcher unavailable:",
-                error
-            )
-
-            return None
-
-    def process(self, command):
-
-        if not command or not command.strip():
-
-            self.set_visual("ERROR")
-
-            return failed_result(
-                "Main AI",
-                command,
-                "Command empty hai."
-            )
-
-        command = command.strip()
-
-        try:
-
-            self.set_visual("THINKING")
-
-            agent = self.find_agent(command)
-
-            if not agent:
-
-                self.set_visual("WORKING")
-
-                result = success_result(
-                    "Main AI",
-                    command,
-                    "Main AI command received and ready."
-                )
-
-                self.set_visual("SUCCESS")
-
-                return result
-
-            approval_words = [
-                "upload",
-                "publish",
-                "post",
-                "deploy",
-                "delete",
-                "send"
-            ]
-
-            requires_approval = any(
-                word in command.lower()
-                for word in approval_words
-            )
-
-            if requires_approval:
-
-                self.set_visual("WAITING_APPROVAL")
-
-                return pending_result(
-                    agent,
-                    command,
-                    "Founder approval required before execution."
-                )
-
-            self.set_visual("WORKING")
-
-            result = run_agent(
-                agent,
-                command
-            )
-
-            if not isinstance(result, dict):
-
-                self.set_visual("ERROR")
-
-                return failed_result(
-                    agent,
-                    command,
-                    "Invalid agent response."
-                )
-
-            if result.get("status") == "FAILED":
-
-                self.set_visual("ERROR")
-
-            else:
-
-                self.set_visual("SUCCESS")
-
-            return result
-
-        except Exception as error:
-
-            self.set_visual("ERROR")
-
-            return failed_result(
-                "Main AI",
-                command,
-                "Core processing failed.",
-                str(error)
-            )
+import importlib
+import datetime
 
 
-_core = UdaanCore()
+AGENT_MODULES = {
+    "Research AI": "Research",
+    "Content AI": "Content",
+    "Creative AI": "Creative",
+    "Video AI": "Video",
+    "Social AI": "Social",
+    "YouTube AI": "YouTube",
+    "Analytics AI": "Analytics",
+    "Marketing AI": "Marketing",
+    "Developer AI": "Developer",
+    "Automation AI": "Automation",
+}
 
 
-def process_command(command):
-    return _core.process(command)
+KEYWORDS = {
+    "Research AI": [
+        "research", "search", "find", "trend",
+        "competitor", "information"
+    ],
+    "Content AI": [
+        "content", "script", "article",
+        "post idea", "caption", "write"
+    ],
+    "Creative AI": [
+        "creative", "thumbnail", "design",
+        "visual", "image"
+    ],
+    "Video AI": [
+        "video", "reel", "short", "editing"
+    ],
+    "Social AI": [
+        "instagram", "facebook",
+        "social media", "social"
+    ],
+    "YouTube AI": [
+        "youtube", "youtube video",
+        "youtube channel", "upload"
+    ],
+    "Analytics AI": [
+        "analytics", "views",
+        "retention", "performance",
+        "report", "data"
+    ],
+    "Marketing AI": [
+        "marketing", "campaign",
+        "growth", "promotion"
+    ],
+    "Developer AI": [
+        "developer", "coding",
+        "code", "app banao",
+        "software", "bug"
+    ],
+    "Automation AI": [
+        "automation", "automate",
+        "automatic", "repeat"
+    ],
+}
 
 
 def get_core_state():
-    return _core.visual_core.get_state()
+    return {
+        "system": "UDAAN AI CORE",
+        "status": "ONLINE",
+        "mode": "EXECUTION",
+        "timestamp": datetime.datetime.now().isoformat(),
+        "agents": list(AGENT_MODULES.keys())
+    }
+
+
+def detect_agent(command):
+    command_lower = command.lower()
+
+    for agent, words in KEYWORDS.items():
+        for word in words:
+            if word in command_lower:
+                return agent
+
+    return "Main AI"
+
+
+def find_entry_point(module):
+    for function_name in [
+        "execute",
+        "run",
+        "process",
+        "handle",
+        "research",
+        "generate_content",
+        "generate_creative",
+        "create_video",
+        "publish",
+        "upload",
+    ]:
+        function = getattr(module, function_name, None)
+
+        if callable(function):
+            return function
+
+    return None
+
+
+def execute_agent(agent_name, command):
+
+    module_name = AGENT_MODULES.get(agent_name)
+
+    if not module_name:
+        return {
+            "status": "SUCCESS",
+            "agent": agent_name,
+            "command": command,
+            "message": "Main AI received the command."
+        }
+
+    try:
+        module = importlib.import_module(module_name)
+
+    except Exception as error:
+        return {
+            "status": "FAILED",
+            "agent": agent_name,
+            "command": command,
+            "message": "Agent module load failed.",
+            "error": str(error)
+        }
+
+    function = find_entry_point(module)
+
+    if not function:
+        return {
+            "status": "FAILED",
+            "agent": agent_name,
+            "command": command,
+            "message": "Agent function not found."
+        }
+
+    try:
+        result = function(command)
+
+        return {
+            "status": "SUCCESS",
+            "agent": agent_name,
+            "command": command,
+            "message": f"{agent_name} executed successfully.",
+            "result": result
+        }
+
+    except Exception as error:
+        return {
+            "status": "FAILED",
+            "agent": agent_name,
+            "command": command,
+            "message": f"{agent_name} execution failed.",
+            "error": str(error)
+        }
+
+
+def process_command(command):
+
+    command = str(command).strip()
+
+    if not command:
+        return {
+            "status": "FAILED",
+            "message": "Command empty hai.",
+            "core_state": get_core_state()
+        }
+
+    agent = detect_agent(command)
+
+    print()
+    print("[UDAAN CORE]")
+    print("Command :", command)
+    print("Agent   :", agent)
+
+    result = execute_agent(agent, command)
+
+    result["core_state"] = get_core_state()
+
+    return result
 
 
 if __name__ == "__main__":
 
-    print()
     print("=" * 60)
-    print("       UDAAN AI — CORE VISUAL TEST")
+    print("          UDAAN AI CORE")
     print("=" * 60)
 
-    commands = [
-        "research latest AI trends",
-        "create YouTube content",
-        "upload video to YouTube"
-    ]
-
-    for command in commands:
-
-        print()
-        print("🗣️", command)
-
-        result = process_command(command)
-
-        print("📊 Status :", result.get("status"))
-        print("🤖 Agent  :", result.get("agent"))
-        print("💬 Message:", result.get("message"))
-
-    print()
-    print("🔵 Final Core State:")
     print(get_core_state())
 
+    command = input("\nUDAAN command: ").strip()
+
     print()
-    print("✅ CORE VISUAL INTEGRATION READY")
+    print(process_command(command))
