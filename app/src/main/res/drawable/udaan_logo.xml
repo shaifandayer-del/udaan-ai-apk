@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="512dp"
+    android:height="512dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Outer futuristic circle -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="8"
+        android:pathData="M256,24
+        A232,232 0,1 0,256,488
+        A232,232 0,1 0,256,24" />
+
+    <!-- Eagle head -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M256,92
+        C218,112 190,146 176,184
+        C154,180 132,188 116,204
+        C142,214 164,226 180,244
+        C164,270 158,300 162,330
+        C184,310 202,292 218,270
+        C232,286 246,304 256,328
+        C266,304 280,286 294,270
+        C310,292 328,310 350,330
+        C354,300 348,270 332,244
+        C348,226 370,214 396,204
+        C380,188 358,180 336,184
+        C322,146 294,112 256,92 Z" />
+
+    <!-- Eagle center -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M256,148
+        C238,170 230,194 232,218
+        C242,208 250,202 256,198
+        C262,202 270,208 280,218
+        C282,194 274,170 256,148 Z" />
+
+    <!-- UDAAN wings -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M180,244
+        C140,252 106,270 78,300
+        C116,294 150,286 186,272 Z" />
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M332,244
+        C372,252 406,270 434,300
+        C396,294 362,286 326,272 Z" />
+
+    <!-- Center power line -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M248,330
+        L256,382
+        L264,330
+        L256,344 Z" />
+
+</vector>
