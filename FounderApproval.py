@@ -1,8 +1,4 @@
-# ==========================================
-# UDAAN AI - FOUNDER APPROVAL
-# STEP 96
-# Persistent Approval + Developer Build
-# ==========================================
+# FounderApproval.py
 
 import time
 
@@ -13,21 +9,7 @@ from ApprovalDatabase import (
     get_pending_approvals_db
 )
 
-
 _APPROVAL_QUEUE = []
-
-
-PROTECTED_ACTIONS = {
-    "UPLOAD_VIDEO",
-    "UPLOAD_YOUTUBE",
-    "UPLOAD_INSTAGRAM",
-    "PUBLISH_CONTENT",
-    "BUILD_APP",
-    "BUILD_SOFTWARE",
-    "DEPLOY_APP",
-    "DEPLOY_SOFTWARE",
-    "DELETE_PROJECT",
-}
 
 
 def request_approval(
@@ -36,11 +18,11 @@ def request_approval(
     file_path=None,
     title=None,
     description=None,
-    agent=None
+    agent=None,
+    command=None,
+    metadata=None,
+    protected_action=None
 ):
-
-    action = str(action).strip().upper()
-
     approval_id = "APR-" + str(
         int(time.time() * 1000)
     )
@@ -53,16 +35,13 @@ def request_approval(
         "file_path": file_path,
         "title": title,
         "description": description,
+        "agent": agent,
         "command": command,
-        "metadata": metadata or {"agent": agent,,
-        "protected_action": (
-            action in PROTECTED_ACTIONS
-        )
+        "metadata": metadata,
+        "protected_action": protected_action
     }
 
     _APPROVAL_QUEUE.append(item)
-
-    # Persistent database save
     save_approval(item)
 
     return item
@@ -70,61 +49,33 @@ def request_approval(
 
 def request_developer_build(
     command,
-    project_name=None,
-    description=None
+    title="Developer AI App Build",
+    description="Developer AI wants to build an application."
 ):
-    """
-    Developer AI ke app/software build request
-    ko Founder Approval queue mein bhejta hai.
-
-    Actual build approval ke baad hi external
-    execution layer se kiya jayega.
-    """
-
-    if not command or not str(command).strip():
-
-        return {
-            "status": "FAILED",
-            "message": "Developer build command empty hai."
-        }
-
     return request_approval(
         action="BUILD_APP",
-        platform="Android",
-        title=project_name or "UDAAN Generated App",
-        description=(
-            description
-            or "Developer AI app build request."
-        ),
-        command=str(command).strip(),
-        metadata={
-            "source": "Developer AI",
-            "build_type": "application"
-        }
+        title=title,
+        description=description,
+        agent="Developer AI",
+        command=command,
+        protected_action=True
     )
 
 
 def get_pending_approvals():
-
-    # Database is the persistent source
     return get_pending_approvals_db()
 
 
 def approve(approval_id):
-
-    approval = get_approval_from_db(
-        approval_id
-    )
+    approval = get_approval_from_db(approval_id)
 
     if not approval:
-
         return {
             "status": "FAILED",
             "message": "Approval ID not found."
         }
 
     if approval["status"] != "PENDING":
-
         return {
             "status": "FAILED",
             "message": "Approval already processed.",
@@ -137,7 +88,6 @@ def approve(approval_id):
     )
 
     if not updated:
-
         return {
             "status": "FAILED",
             "message": "Database update failed."
@@ -152,20 +102,15 @@ def approve(approval_id):
 
 
 def reject(approval_id):
-
-    approval = get_approval_from_db(
-        approval_id
-    )
+    approval = get_approval_from_db(approval_id)
 
     if not approval:
-
         return {
             "status": "FAILED",
             "message": "Approval ID not found."
         }
 
     if approval["status"] != "PENDING":
-
         return {
             "status": "FAILED",
             "message": "Approval already processed.",
@@ -178,7 +123,6 @@ def reject(approval_id):
     )
 
     if not updated:
-
         return {
             "status": "FAILED",
             "message": "Database update failed."
@@ -193,71 +137,4 @@ def reject(approval_id):
 
 
 def get_approval(approval_id):
-
-    return get_approval_from_db(
-        approval_id
-    )
-
-
-def is_protected_action(action):
-
-    return str(action).strip().upper() in PROTECTED_ACTIONS
-
-
-if __name__ == "__main__":
-
-    print()
-    print("=" * 60)
-    print("       UDAAN AI — PERSISTENT APPROVAL TEST")
-    print("=" * 60)
-
-    request = request_approval(
-        action="UPLOAD_VIDEO",
-        platform="YouTube",
-        file_path="udaan_videos/demo.mp4",
-        title="Udaan AI Demo",
-        description="Persistent approval test"
-    )
-
-    print()
-    print("🆔 Approval ID:")
-    print(request["approval_id"])
-
-    print()
-    print("📊 Initial Status:")
-    print(request["status"])
-
-    print()
-    print("💾 Saved to database.")
-
-    print()
-    print("📋 Pending Approvals:")
-
-    print(
-        get_pending_approvals()
-    )
-
-    print()
-    print("👤 Founder approving...")
-
-    result = approve(
-        request["approval_id"]
-    )
-
-    print()
-    print("📊 Approval Result:")
-    print(result)
-
-    print()
-    print("🔎 Database Record:")
-
-    print(
-        get_approval(
-            request["approval_id"]
-        )
-    )
-
-    print()
-    print("=" * 60)
-    print("✅ PERSISTENT APPROVAL SYSTEM READY")
-    print("=" * 60)
+    return get_approval_from_db(approval_id)
