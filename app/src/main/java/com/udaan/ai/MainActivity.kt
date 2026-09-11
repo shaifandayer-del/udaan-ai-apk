@@ -26,27 +26,31 @@ class MainActivity : Activity() {
         .readTimeout(60, TimeUnit.SECONDS)
         .build()
 
-    /*
-     * Backend URL final deployment ke baad yahan set hoga.
-     * Abhi placeholder hai — fake success nahi dikhaya jayega.
-     */
     private val backendUrl = "BACKEND_URL"
-
-    /*
-     * Real Founder API key app mein hard-code nahi karni.
-     * Secure configuration next security phase mein add hogi.
-     */
     private val founderApiKey = "FOUNDER_API_KEY"
 
     private lateinit var statusText: TextView
     private lateinit var commandInput: EditText
+
+    private val agents = listOf(
+        "Research AI",
+        "Content AI",
+        "Creative AI",
+        "Video AI",
+        "Social AI",
+        "YouTube AI",
+        "Analytics AI",
+        "Marketing AI",
+        "Developer AI",
+        "Automation AI"
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showCommandCenter()
     }
 
-    private fun showCommandCenter() {
+    private fun createRoot(title: String): Pair<LinearLayout, LinearLayout> {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -56,93 +60,35 @@ class MainActivity : Activity() {
         val header = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setPadding(20, 30, 20, 20)
+            setPadding(20, 25, 20, 15)
         }
 
         val logo = ImageView(this).apply {
-            setImageResource(com.udaan.ai.R.drawable.udaan_logo)
-            adjustViewBounds = true
+            setImageResource(R.drawable.udaan_logo)
         }
 
         header.addView(
             logo,
-            LinearLayout.LayoutParams(
-                110,
-                110
-            )
+            LinearLayout.LayoutParams(90, 90)
         )
 
-        val title = TextView(this).apply {
-            text = "UDAAN AI"
-            textSize = 28f
+        val titleView = TextView(this).apply {
+            text = "UDAAN AI\n$title"
+            textSize = 24f
             setTextColor(Color.WHITE)
             gravity = Gravity.CENTER
         }
 
-        header.addView(title)
+        header.addView(titleView)
 
-        val subtitle = TextView(this).apply {
-            text = "AI COMMAND CENTER"
-            textSize = 13f
-            setTextColor(Color.LTGRAY)
-            gravity = Gravity.CENTER
-            setPadding(0, 5, 0, 15)
-        }
-
-        header.addView(subtitle)
         root.addView(header)
 
         val scroll = ScrollView(this)
 
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(25, 10, 25, 25)
+            setPadding(24, 10, 24, 25)
         }
-
-        commandInput = EditText(this).apply {
-            hint = "Founder command likho..."
-            hintTextColor = Color.GRAY
-            setTextColor(Color.WHITE)
-            textSize = 17f
-            setPadding(20, 20, 20, 20)
-        }
-
-        content.addView(commandInput)
-
-        val executeButton = Button(this).apply {
-            text = "EXECUTE COMMAND"
-            textSize = 15f
-
-            setOnClickListener {
-                sendCommand()
-            }
-        }
-
-        content.addView(
-            executeButton,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(0, 15, 0, 20)
-            }
-        )
-
-        statusText = TextView(this).apply {
-            text = "UDAAN AI CORE\nREADY"
-            textSize = 16f
-            setTextColor(Color.WHITE)
-            setPadding(20, 20, 20, 25)
-        }
-
-        content.addView(statusText)
-
-        addCard(content, "🤖 AI AGENTS", "Research • Content • Video • YouTube • Social")
-        addCard(content, "📋 TASKS", "Active • Pending Approval • Completed")
-        addCard(content, "🎬 VIDEO STUDIO", "Video creation and workflow")
-        addCard(content, "📱 SOCIAL MEDIA", "Social content and publishing workflow")
-        addCard(content, "📊 ANALYTICS", "Performance and reports")
-        addCard(content, "👑 FOUNDER APPROVAL", "Approval required for sensitive actions")
 
         scroll.addView(content)
 
@@ -153,6 +99,271 @@ class MainActivity : Activity() {
                 0,
                 1f
             )
+        )
+
+        root.addView(createNavigation())
+
+        return Pair(root, content)
+    }
+
+    private fun createNavigation(): LinearLayout {
+
+        val nav = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(5, 5, 5, 5)
+        }
+
+        val buttons = listOf(
+            "Home",
+            "Agents",
+            "Tasks",
+            "Content"
+        )
+
+        buttons.forEach { name ->
+
+            val button = Button(this).apply {
+                text = name
+                textSize = 11f
+
+                setOnClickListener {
+                    when (name) {
+                        "Home" -> showCommandCenter()
+                        "Agents" -> showAgents()
+                        "Tasks" -> showTasks()
+                        "Content" -> showContent()
+                    }
+                }
+            }
+
+            nav.addView(
+                button,
+                LinearLayout.LayoutParams(
+                    0,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    1f
+                )
+            )
+        }
+
+        return nav
+    }
+
+    private fun showCommandCenter() {
+
+        val pair = createRoot("COMMAND CENTER")
+        val root = pair.first
+        val content = pair.second
+
+        commandInput = EditText(this).apply {
+            hint = "Founder command..."
+            hintTextColor = Color.GRAY
+            setTextColor(Color.WHITE)
+            textSize = 17f
+        }
+
+        content.addView(commandInput)
+
+        val execute = Button(this).apply {
+            text = "EXECUTE COMMAND"
+            setOnClickListener {
+                sendCommand()
+            }
+        }
+
+        content.addView(execute)
+
+        statusText = TextView(this).apply {
+            text = "UDAAN AI CORE\nREADY"
+            textSize = 16f
+            setTextColor(Color.WHITE)
+            setPadding(10, 25, 10, 25)
+        }
+
+        content.addView(statusText)
+
+        addCard(
+            content,
+            "🧠 MAIN AI",
+            "Command orchestration"
+        )
+
+        addCard(
+            content,
+            "🤖 AI AGENTS",
+            "10 specialized AI agents"
+        )
+
+        addCard(
+            content,
+            "🎬 VIDEO STUDIO",
+            "Video creation workflow"
+        )
+
+        addCard(
+            content,
+            "📱 SOCIAL MEDIA",
+            "Social automation"
+        )
+
+        addCard(
+            content,
+            "📊 ANALYTICS",
+            "Performance analytics"
+        )
+
+        setContentView(root)
+    }
+
+    private fun showAgents() {
+
+        val pair = createRoot("AI AGENTS")
+        val root = pair.first
+        val content = pair.second
+
+        val info = TextView(this).apply {
+            text = "SELECT AN AI AGENT"
+            textSize = 17f
+            setTextColor(Color.WHITE)
+            setPadding(5, 10, 5, 20)
+        }
+
+        content.addView(info)
+
+        agents.forEach { agent ->
+
+            val button = Button(this).apply {
+                text = agent
+
+                setOnClickListener {
+                    openAgent(agent)
+                }
+            }
+
+            content.addView(
+                button,
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    setMargins(0, 5, 0, 5)
+                }
+            )
+        }
+
+        setContentView(root)
+    }
+
+    private fun openAgent(agent: String) {
+
+        val pair = createRoot(agent)
+        val root = pair.first
+        val content = pair.second
+
+        val description = TextView(this).apply {
+            text = "$agent\n\nReady to receive Founder commands."
+            textSize = 18f
+            setTextColor(Color.WHITE)
+            setPadding(5, 15, 5, 20)
+        }
+
+        content.addView(description)
+
+        val input = EditText(this).apply {
+            hint = "$agent command..."
+            hintTextColor = Color.GRAY
+            setTextColor(Color.WHITE)
+            textSize = 16f
+        }
+
+        content.addView(input)
+
+        val run = Button(this).apply {
+            text = "RUN $agent"
+
+            setOnClickListener {
+
+                val command = input.text.toString().trim()
+
+                if (command.isEmpty()) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Command empty hai",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+
+                    val routedCommand =
+                        "$agent: $command"
+
+                    if (::statusText.isInitialized) {
+                        statusText.text =
+                            "COMMAND READY\n\n$routedCommand"
+                    }
+
+                    Toast.makeText(
+                        this@MainActivity,
+                        "$agent selected",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+
+        content.addView(run)
+
+        setContentView(root)
+    }
+
+    private fun showTasks() {
+
+        val pair = createRoot("TASKS")
+        val root = pair.first
+        val content = pair.second
+
+        addCard(
+            content,
+            "📋 ACTIVE TASKS",
+            "Founder tasks"
+        )
+
+        addCard(
+            content,
+            "⏳ PENDING APPROVAL",
+            "Founder Approval required"
+        )
+
+        addCard(
+            content,
+            "✅ COMPLETED",
+            "Completed AI tasks"
+        )
+
+        setContentView(root)
+    }
+
+    private fun showContent() {
+
+        val pair = createRoot("CONTENT")
+        val root = pair.first
+        val content = pair.second
+
+        addCard(
+            content,
+            "✍️ CONTENT AI",
+            "Scripts, captions and posts"
+        )
+
+        addCard(
+            content,
+            "🎬 VIDEO AI",
+            "Video creation workflow"
+        )
+
+        addCard(
+            content,
+            "▶️ YOUTUBE AI",
+            "YouTube workflow"
         )
 
         setContentView(root)
@@ -177,7 +388,7 @@ class MainActivity : Activity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply {
-                setMargins(0, 5, 0, 5)
+                setMargins(0, 6, 0, 6)
             }
         )
     }
@@ -201,7 +412,8 @@ class MainActivity : Activity() {
             return
         }
 
-        statusText.text = "UDAAN AI\n\nProcessing command..."
+        statusText.text =
+            "UDAAN AI\n\nProcessing..."
 
         Thread {
 
@@ -231,23 +443,18 @@ class MainActivity : Activity() {
 
                     runOnUiThread {
 
-                        if (response.isSuccessful) {
-
-                            statusText.text =
+                        statusText.text =
+                            if (response.isSuccessful) {
                                 "UDAAN AI RESPONSE\n\n$result"
-
-                        } else {
-
-                            statusText.text =
+                            } else {
                                 "BACKEND ERROR\n\nHTTP ${response.code}\n$result"
-                        }
+                            }
                     }
                 }
 
             } catch (error: Exception) {
 
                 runOnUiThread {
-
                     statusText.text =
                         "BACKEND CONNECTION FAILED\n\n${error.message}"
                 }
