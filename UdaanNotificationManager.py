@@ -1,9 +1,3 @@
-Step 134 — File name: UdaanNotificationManager.py
-
-# ==========================================
-# UDAAN AI - NOTIFICATION MANAGER
-# STEP 134
-# ==========================================
 
 from datetime import datetime
 
