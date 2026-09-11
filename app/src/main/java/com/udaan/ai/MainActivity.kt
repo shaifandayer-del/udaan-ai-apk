@@ -36,14 +36,18 @@ class MainActivity : Activity() {
     private lateinit var statusText: TextView
     private lateinit var commandInput: EditText
 
-    private val agents = listOf(
-        data class UdaanAgent(
+    
+    data class UdaanAgent(
     val name: String,
     val module: String,
     val description: String,
     val status: String,
     val functions: List<String>
 )
+
+private var dynamicAgents = mutableListOf<UdaanAgent>()    
+
+
 
 private var dynamicAgents = mutableListOf<UdaanAgent>()
     )
