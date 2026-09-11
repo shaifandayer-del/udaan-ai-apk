@@ -140,3 +140,46 @@ jobs:
           python -c "import os; key=os.environ.get('UDAAN_FOUNDER_API_KEY',''); assert key != ''; print('Python environment received Founder API key')"
 
           echo "SECURITY SECRET TEST PASSED"
+      - name: Real API Authorization Test
+        env:
+          UDAAN_FOUNDER_API_KEY: ${{ secrets.UDAAN_FOUNDER_API_KEY }}
+        run: |
+          echo "=============================="
+          echo "REAL API AUTHORIZATION TEST"
+          echo "=============================="
+
+          python UdaanAPI.py > api_test.log 2>&1 &
+          API_PID=$!
+
+          sleep 2
+
+          echo "Testing request without API key..."
+
+          UNAUTHORIZED=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            http://127.0.0.1:8080/command \
+            -H "Content-Type: application/json" \
+            -d '{"command":"research latest AI trends"}')
+
+          test "$UNAUTHORIZED" = "401"
+
+          echo "Unauthorized request correctly blocked."
+
+          echo "Testing request with Founder API key..."
+
+          AUTHORIZED=$(curl -s \
+            -X POST \
+            http://127.0.0.1:8080/command \
+            -H "Content-Type: application/json" \
+            -H "X-Udaan-API-Key: $UDAAN_FOUNDER_API_KEY" \
+            -d '{"command":"research latest AI trends"}')
+
+          echo "$AUTHORIZED"
+
+          echo "$AUTHORIZED" | grep -q '"status": "SUCCESS"'
+
+          kill "$API_PID" || true
+
+          echo "=============================="
+          echo "REAL API AUTHORIZATION PASSED"
+          echo "=============================="
