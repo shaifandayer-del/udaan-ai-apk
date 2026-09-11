@@ -157,7 +157,7 @@ class MainActivity : Activity() {
 
         commandInput = EditText(this).apply {
             hint = "Founder command..."
-            hintTextColor = Color.GRAY
+            setHintTextColor(Color.GRAY)
             setTextColor(Color.WHITE)
             textSize = 17f
         }
@@ -271,7 +271,7 @@ class MainActivity : Activity() {
 
         val input = EditText(this).apply {
             hint = "$agent command..."
-            hintTextColor = Color.GRAY
+            setHintTextColor(Color.GRAY)
             setTextColor(Color.WHITE)
             textSize = 16f
         }
