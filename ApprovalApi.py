@@ -1,4 +1,9 @@
 from UdaanCore import process_command
+from FounderApproval import (
+    request_approval,
+    get_pending_approvals,
+    get_approval,
+)
 
 
 PROTECTED_WORDS = [
@@ -7,7 +12,15 @@ PROTECTED_WORDS = [
     "post",
     "deploy",
     "delete",
-    "send"
+    "send",
+    "app banao",
+    "app bana",
+    "software banao",
+    "software bana",
+    "build app",
+    "build software",
+    "create app",
+    "create software",
 ]
 
 
@@ -24,7 +37,12 @@ def requires_founder_approval(command):
     )
 
 
-def submit_command(command):
+def submit_command(
+    command,
+    agent=None,
+    platform=None,
+    action="COMMAND_EXECUTION",
+):
 
     if not command or not command.strip():
 
@@ -37,22 +55,57 @@ def submit_command(command):
 
     if requires_founder_approval(command):
 
+        approval = request_approval(
+            action=action,
+            platform=platform,
+            title="UDAAN AI Founder Approval",
+            description=(
+                "Founder approval required "
+                "before protected action execution."
+            ),
+            command=command,
+            agent=agent,
+            metadata={
+                "source": "ApprovalApi",
+                "protected": True,
+            },
+        )
+
         return {
-            "status": "WAITING_APPROVAL",
+            "status": "PENDING_APPROVAL",
             "command": command,
+            "approval_id": approval.get("approval_id"),
+            "agent": agent,
             "message": "Founder approval required.",
-            "next_action": "approve_or_reject"
+            "next_action": "approve_or_reject",
         }
 
     return process_command(command)
 
 
-def approval_status(command):
+def approval_status(approval_id):
+
+    approval = get_approval(approval_id)
+
+    if not approval:
+
+        return {
+            "status": "FAILED",
+            "message": "Approval ID not found.",
+            "approval_id": approval_id,
+        }
 
     return {
-        "command": command,
-        "requires_approval":
-            requires_founder_approval(command)
+        "status": approval.get("status"),
+        "approval": approval,
+    }
+
+
+def pending_approvals():
+
+    return {
+        "status": "SUCCESS",
+        "approvals": get_pending_approvals(),
     }
 
 
@@ -67,7 +120,8 @@ if __name__ == "__main__":
         "research latest AI trends",
         "create a video",
         "upload video to YouTube",
-        "publish Instagram post"
+        "publish Instagram post",
+        "build Android app",
     ]
 
     for command in tests:
@@ -79,6 +133,12 @@ if __name__ == "__main__":
 
         print("📊 Status :", result.get("status"))
         print("💬 Message:", result.get("message"))
+
+        if result.get("approval_id"):
+            print(
+                "🔐 Approval ID:",
+                result.get("approval_id")
+            )
 
     print()
     print("=" * 60)
