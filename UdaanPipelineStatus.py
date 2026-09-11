@@ -1,9 +1,3 @@
-Step 130 — File name: UdaanPipelineStatus.py
-
-# ==========================================
-# UDAAN AI - PIPELINE STATUS
-# STEP 130
-# ==========================================
 
 from UdaanAutomationController import (
     run_automation_cycle,
