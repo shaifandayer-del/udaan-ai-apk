@@ -343,15 +343,27 @@ private fun loadDynamicAgents() {
 
         content.addView(info)
 
-        agents.forEach { agent ->
+        dynamicAgents.forEach { agent ->
 
-            val button = Button(this).apply {
+    val button = Button(this).apply {
 
-                text = agent
+        text = "${agent.name}\n${agent.status}"
 
-                setOnClickListener {
-                    openAgent(agent)
-                }
+        setOnClickListener {
+            openAgent(agent)
+        }
+    }
+
+    content.addView(
+        button,
+        LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply {
+            setMargins(0, 5, 0, 5)
+        }
+    )
+}
             }
 
             content.addView(
