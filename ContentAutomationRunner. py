@@ -1,0 +1,97 @@
+# ==========================================
+# UDAAN AI - CONTENT AUTOMATION RUNNER
+# STEP 127
+# ==========================================
+
+from ContentVideoOrchestrator import create_content_videos
+from UploadScheduler import schedule_daily
+
+
+class ContentAutomationRunner:
+
+    def run(
+        self,
+        channel=None,
+        max_results=5,
+        upload_hour=18,
+        upload_minute=0
+    ):
+
+        pipeline = create_content_videos(
+            channel=channel,
+            max_results=max_results
+        )
+
+        if pipeline.get("status") != "SUCCESS":
+            return pipeline
+
+        scheduled = []
+
+        for item in pipeline.get("pipeline", []):
+
+            video_job = item.get(
+                "video_job",
+                {}
+            ).get(
+                "job",
+                {}
+            )
+
+            if not video_job:
+                continue
+
+            video_path = video_job.get(
+                "video_path"
+            )
+
+            target_channel = (
+                video_job.get("channel")
+                or channel
+            )
+
+            if not video_path or not target_channel:
+                continue
+
+            schedule = schedule_daily(
+                video_path=video_path,
+                channel=target_channel,
+                hour=upload_hour,
+                minute=upload_minute,
+                title=video_job.get(
+                    "topic",
+                    "UDAAN AI Video"
+                ),
+                description=(
+                    "Created by UDAAN AI."
+                )
+            )
+
+            scheduled.append({
+                "video_job": video_job,
+                "schedule": schedule
+            })
+
+        return {
+            "status": "SUCCESS",
+            "agent": "Automation AI",
+            "total_scheduled": len(scheduled),
+            "scheduled": scheduled
+        }
+
+
+_runner = ContentAutomationRunner()
+
+
+def run_content_automation(
+    channel=None,
+    max_results=5,
+    upload_hour=18,
+    upload_minute=0
+):
+
+    return _runner.run(
+        channel,
+        max_results,
+        upload_hour,
+        upload_minute
+    )
