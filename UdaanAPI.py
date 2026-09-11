@@ -1,7 +1,28 @@
 import os
-def get_dynamic_agents():
-    agents = []
+import importlib
+from flask import Flask, jsonify, request
+from UdaanCommandCenter import execute_command, get_command_center_status
+from FounderApproval import get_pending_approvals, get_approval
+from FounderApprovalExecutor import approve_and_execute, reject_request
 
+app = Flask(__name__)
+
+HOST = "0.0.0.0"
+PORT = int(os.getenv("PORT", "10000"))
+FOUNDER_API_KEY = os.getenv("UDAAN_FOUNDER_API_KEY", "")
+
+def check_api_key():
+    if not FOUNDER_API_KEY:
+        return False
+    return request.headers.get("X-Udaan-API-Key", "") == FOUNDER_API_KEY
+
+def unauthorized():
+    return jsonify({
+        "status": "UNAUTHORIZED",
+        "message": "Founder API key required."
+    }), 401
+
+def get_dynamic_agents():
     agent_files = [
         ("Research", "Research AI", "Research & trends"),
         ("Content", "Content AI", "Scripts & captions"),
@@ -12,303 +33,255 @@ def get_dynamic_agents():
         ("Marketing", "Marketing AI", "Campaigns & growth"),
         ("Developer", "Developer AI", "Apps & software"),
         ("Automation", "Automation AI", "Workflows & automation"),
-        ("Creative", "Creative AI", "Ideas & design"),
+        ("Creative", "Creative AI", "Ideas & design")
     ]
 
+    agents = []
+
     for module_name, display_name, description in agent_files:
+        item = {
+            "name": display_name,
+            "module": module_name,
+            "description": description,
+            "status": "OFFLINE",
+            "functions": []
+        }
+
         try:
             module = importlib.import_module(module_name)
+            functions = []
 
-            functions = [
-                name for name in dir(module)
-                if callable(getattr(module, name, None))
-                and not name.startswith("_")
-            ]
+            for name in dir(module):
+                if name.startswith("_"):
+                    continue
 
-            agents.append({
-                "name": display_name,
-                "module": module_name,
-                "description": description,
-                "status": "ONLINE",
-                "functions": functions
-            })
+                try:
+                    value = getattr(module, name)
+                except Exception:
+                    continue
+
+                if callable(value):
+                    functions.append(name)
+
+            item["status"] = "ONLINE"
+            item["functions"] = sorted(set(functions))
 
         except Exception as error:
-            agents.append({
-                "name": display_name,
-                "module": module_name,
-                "description": description,
-                "status": "OFFLINE",
-                "functions": [],
-                "error": str(error)
-            })
+            item["error"] = str(error)
+
+        agents.append(item)
+
+    online_count = sum(
+        1 for agent in agents
+        if agent["status"] == "ONLINE"
+    )
 
     return {
         "status": "SUCCESS",
         "count": len(agents),
+        "online": online_count,
+        "offline": len(agents) - online_count,
         "agents": agents
     }
-    @app.get("/agents")
-def agents_endpoint():
-    return get_dynamic_agents()
-from flask import Flask, jsonify, request
 
-from UdaanCommandCenter import (
-    execute_command,
-    get_command_center_status
-)
-
-from FounderApproval import (
-    get_pending_approvals,
-    get_approval
-)
-
-from FounderApprovalExecutor import (
-    approve_and_execute,
-    reject_request
-)
-
-
-app = Flask(__name__)
-
-HOST = "0.0.0.0"
-PORT = int(os.environ.get("PORT", "8080"))
-
-FOUNDER_API_KEY = os.environ.get(
-    "UDAAN_FOUNDER_API_KEY",
-    ""
-)
-
-
-# ==========================================
-# SECURITY
-# ==========================================
-
-def is_authorized():
-
-    provided_key = request.headers.get(
-        "X-Udaan-API-Key",
-        ""
-    )
-
-    return (
-        bool(FOUNDER_API_KEY)
-        and provided_key == FOUNDER_API_KEY
-    )
-
-
-# ==========================================
-# COMMAND
-# ==========================================
-
-@app.route("/", methods=["GET"])
+@app.get("/")
 def home():
-
     return jsonify({
-        "system": "UDAAN AI",
+        "name": "UDAAN AI API",
         "status": "ONLINE",
-        "message": "UDAAN AI API is running."
+        "service": "AI Command Center",
+        "version": "1.0",
+        "message": "UDAAN AI backend is running."
     })
 
-
-@app.route("/health", methods=["GET"])
+@app.get("/health")
 def health():
-
     return jsonify({
-        "system": "UDAAN AI",
-        "status": "HEALTHY"
+        "status": "ONLINE",
+        "service": "UDAAN AI",
+        "api": "READY"
     })
 
-
-@app.route("/status", methods=["GET"])
+@app.get("/status")
 def status():
-
-    if not is_authorized():
-
-        return jsonify({
-            "status": "UNAUTHORIZED",
-            "message": "Founder API Key required."
-        }), 401
-
-    return jsonify(
-        get_command_center_status()
-    )
-
-
-@app.route("/command", methods=["POST"])
-def command():
-
-    if not is_authorized():
-
-        return jsonify({
-            "status": "UNAUTHORIZED",
-            "message": "Founder API Key required."
-        }), 401
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-    founder_command = str(
-        data.get("command", "")
-    ).strip()
-
-    if not founder_command:
-
-        return jsonify({
-            "status": "FAILED",
-            "message": "Command empty hai."
-        }), 400
+    if not check_api_key():
+        return unauthorized()
 
     try:
+        result = get_command_center_status()
 
-        result = execute_command(
-            founder_command
-        )
+        return jsonify({
+            "status": "ONLINE",
+            "service": "UDAAN AI",
+            "command_center": result
+        })
 
+    except Exception as error:
+        return jsonify({
+            "status": "ERROR",
+            "service": "UDAAN AI",
+            "error": str(error)
+        }), 500
+
+@app.get("/agents")
+def agents_endpoint():
+    if not check_api_key():
+        return unauthorized()
+
+    try:
+        return jsonify(get_dynamic_agents())
+
+    except Exception as error:
+        return jsonify({
+            "status": "FAILED",
+            "message": "Agent discovery failed.",
+            "error": str(error)
+        }), 500
+
+@app.post("/command")
+def command_endpoint():
+    if not check_api_key():
+        return unauthorized()
+
+    try:
+        data = request.get_json(silent=True) or {}
+        command = str(data.get("command", "")).strip()
+
+        if not command:
+            return jsonify({
+                "status": "FAILED",
+                "message": "Command is empty."
+            }), 400
+
+        result = execute_command(command)
         return jsonify(result)
 
     except Exception as error:
-
         return jsonify({
             "status": "FAILED",
             "message": "UDAAN command execution failed.",
             "error": str(error)
         }), 500
 
-
-# ==========================================
-# FOUNDER APPROVALS
-# ==========================================
-
-@app.route("/approvals", methods=["GET"])
-def approvals():
-
-    if not is_authorized():
-
-        return jsonify({
-            "status": "UNAUTHORIZED",
-            "message": "Founder API Key required."
-        }), 401
-
-    return jsonify({
-        "status": "SUCCESS",
-        "approvals": get_pending_approvals()
-    })
-
-
-@app.route(
-    "/approvals/<approval_id>",
-    methods=["GET"]
-)
-def approval_details(approval_id):
-
-    if not is_authorized():
-
-        return jsonify({
-            "status": "UNAUTHORIZED",
-            "message": "Founder API Key required."
-        }), 401
-
-    approval = get_approval(
-        approval_id
-    )
-
-    if not approval:
-
-        return jsonify({
-            "status": "FAILED",
-            "message": "Approval ID not found.",
-            "approval_id": approval_id
-        }), 404
-
-    return jsonify({
-        "status": "SUCCESS",
-        "approval": approval
-    })
-
-
-@app.route(
-    "/approvals/<approval_id>/approve",
-    methods=["POST"]
-)
-def approve_approval(approval_id):
-
-    if not is_authorized():
-
-        return jsonify({
-            "status": "UNAUTHORIZED",
-            "message": "Founder API Key required."
-        }), 401
+@app.get("/approvals")
+def approvals_endpoint():
+    if not check_api_key():
+        return unauthorized()
 
     try:
+        approvals = get_pending_approvals()
 
-        result = approve_and_execute(
-            approval_id
-        )
-
-        return jsonify(result)
+        return jsonify({
+            "status": "SUCCESS",
+            "count": len(approvals),
+            "approvals": approvals
+        })
 
     except Exception as error:
+        return jsonify({
+            "status": "FAILED",
+            "message": "Unable to load approvals.",
+            "error": str(error)
+        }), 500
 
+@app.get("/approvals/<approval_id>")
+def approval_endpoint(approval_id):
+    if not check_api_key():
+        return unauthorized()
+
+    try:
+        approval = get_approval(approval_id)
+
+        if not approval:
+            return jsonify({
+                "status": "FAILED",
+                "message": "Approval ID not found."
+            }), 404
+
+        return jsonify({
+            "status": "SUCCESS",
+            "approval": approval
+        })
+
+    except Exception as error:
+        return jsonify({
+            "status": "FAILED",
+            "message": "Unable to load approval.",
+            "error": str(error)
+        }), 500
+
+@app.post("/approve")
+def approve_endpoint():
+    if not check_api_key():
+        return unauthorized()
+
+    try:
+        data = request.get_json(silent=True) or {}
+        approval_id = str(data.get("approval_id", "")).strip()
+
+        if not approval_id:
+            return jsonify({
+                "status": "FAILED",
+                "message": "approval_id is required."
+            }), 400
+
+        return jsonify(approve_and_execute(approval_id))
+
+    except Exception as error:
         return jsonify({
             "status": "FAILED",
             "message": "Approval execution failed.",
-            "approval_id": approval_id,
             "error": str(error)
         }), 500
 
-
-@app.route(
-    "/approvals/<approval_id>/reject",
-    methods=["POST"]
-)
-def reject_approval(approval_id):
-
-    if not is_authorized():
-
-        return jsonify({
-            "status": "UNAUTHORIZED",
-            "message": "Founder API Key required."
-        }), 401
+@app.post("/reject")
+def reject_endpoint():
+    if not check_api_key():
+        return unauthorized()
 
     try:
+        data = request.get_json(silent=True) or {}
+        approval_id = str(data.get("approval_id", "")).strip()
 
-        result = reject_request(
-            approval_id
-        )
+        if not approval_id:
+            return jsonify({
+                "status": "FAILED",
+                "message": "approval_id is required."
+            }), 400
 
-        return jsonify(result)
+        return jsonify(reject_request(approval_id))
 
     except Exception as error:
-
         return jsonify({
             "status": "FAILED",
             "message": "Approval rejection failed.",
-            "approval_id": approval_id,
             "error": str(error)
         }), 500
 
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+        "status": "FAILED",
+        "message": "Endpoint not found."
+    }), 404
 
-# ==========================================
-# LOCAL SERVER
-# ==========================================
+@app.errorhandler(405)
+def method_not_allowed(error):
+    return jsonify({
+        "status": "FAILED",
+        "message": "HTTP method not allowed."
+    }), 405
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({
+        "status": "FAILED",
+        "message": "Internal server error.",
+        "error": str(error)
+    }), 500
 
 if __name__ == "__main__":
-
-    print("=" * 60)
-    print("                 UDAAN AI API")
-    print("=" * 60)
-    print()
-    print("Host :", HOST)
-    print("Port :", PORT)
-    print("API  : ONLINE")
-    print("Founder Approval API : ENABLED")
-    print()
-    print("=" * 60)
-
     app.run(
         host=HOST,
-        port=PORT,
-        debug=False
+        port=PORT
     )
