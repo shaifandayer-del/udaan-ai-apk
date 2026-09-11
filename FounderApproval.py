@@ -1,4 +1,3 @@
-# FounderApproval.py
 
 import time
 
