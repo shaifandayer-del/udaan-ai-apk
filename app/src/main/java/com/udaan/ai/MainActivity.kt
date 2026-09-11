@@ -51,7 +51,88 @@ private var dynamicAgents = mutableListOf<UdaanAgent>()
 
 private var dynamicAgents = mutableListOf<UdaanAgent>()
     )
+private fun loadDynamicAgents() {
 
+    Thread {
+
+        try {
+
+            val request =
+                Request.Builder()
+                    .url("$backendUrl/agents")
+                    .addHeader(
+                        "X-Udaan-API-Key",
+                        founderApiKey
+                    )
+                    .get()
+                    .build()
+
+            client.newCall(request)
+                .execute()
+                .use { response ->
+
+                    val result =
+                        response.body?.string() ?: ""
+
+                    if (!response.isSuccessful) {
+                        return@use
+                    }
+
+                    val json =
+                        JSONObject(result)
+
+                    val agentArray =
+                        json.optJSONArray("agents")
+                            ?: JSONArray()
+
+                    val loadedAgents =
+                        mutableListOf<UdaanAgent>()
+
+                    for (i in 0 until agentArray.length()) {
+
+                        val agent =
+                            agentArray.getJSONObject(i)
+
+                        val functions =
+                            mutableListOf<String>()
+
+                        val functionArray =
+                            agent.optJSONArray("functions")
+
+                        if (functionArray != null) {
+
+                            for (j in 0 until functionArray.length()) {
+                                functions.add(
+                                    functionArray.getString(j)
+                                )
+                            }
+                        }
+
+                        loadedAgents.add(
+                            UdaanAgent(
+                                name = agent.optString("name"),
+                                module = agent.optString("module"),
+                                description = agent.optString("description"),
+                                status = agent.optString("status"),
+                                functions = functions
+                            )
+                        )
+                    }
+
+                    runOnUiThread {
+
+                        dynamicAgents.clear()
+                        dynamicAgents.addAll(loadedAgents)
+
+                    }
+                }
+
+        } catch (_: Exception) {
+            // Backend unavailable — existing UI continues normally
+        }
+
+    }.start()
+}
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showCommandCenter()
