@@ -104,3 +104,14 @@ jobs:
           echo "=============================="
           echo "AUDIT COMPLETE"
           echo "=============================="
+      - name: UDAAN AI Runtime Integration Test
+        run: |
+          echo "=============================="
+          echo "UDAAN AI RUNTIME TEST"
+          echo "=============================="
+
+          python -c "from UdaanCore import process_command; result=process_command('research latest AI trends'); print(result); assert result.get('status') == 'SUCCESS'"
+
+          echo "=============================="
+          echo "RUNTIME INTEGRATION PASSED"
+          echo "=============================="
