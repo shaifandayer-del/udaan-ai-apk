@@ -36,8 +36,7 @@ def request_approval(
     file_path=None,
     title=None,
     description=None,
-    command=None,
-    metadata=None
+    agent=None
 ):
 
     action = str(action).strip().upper()
@@ -55,7 +54,7 @@ def request_approval(
         "title": title,
         "description": description,
         "command": command,
-        "metadata": metadata or {},
+        "metadata": metadata or {"agent": agent,,
         "protected_action": (
             action in PROTECTED_ACTIONS
         )
