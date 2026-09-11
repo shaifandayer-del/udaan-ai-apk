@@ -16,6 +16,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
@@ -26,8 +27,11 @@ class MainActivity : Activity() {
         .readTimeout(60, TimeUnit.SECONDS)
         .build()
 
-    private val backendUrl = "https://udaan-ai-apk-1.onrender.com"
-    private val founderApiKey = "FOUNDER_API_KEY"
+    private val backendUrl =
+        "https://udaan-ai-apk-1.onrender.com"
+
+    private val founderApiKey =
+        BuildConfig.UDAAN_FOUNDER_API_KEY
 
     private lateinit var statusText: TextView
     private lateinit var commandInput: EditText
@@ -50,11 +54,15 @@ class MainActivity : Activity() {
         showCommandCenter()
     }
 
-    private fun createRoot(title: String): Pair<LinearLayout, LinearLayout> {
+    private fun createRoot(
+        title: String
+    ): Pair<LinearLayout, LinearLayout> {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(Color.rgb(7, 9, 16))
+            setBackgroundColor(
+                Color.rgb(7, 9, 16)
+            )
         }
 
         val header = LinearLayout(this).apply {
@@ -64,12 +72,17 @@ class MainActivity : Activity() {
         }
 
         val logo = ImageView(this).apply {
-            setImageResource(R.drawable.udaan_logo)
+            setImageResource(
+                R.drawable.udaan_logo
+            )
         }
 
         header.addView(
             logo,
-            LinearLayout.LayoutParams(90, 90)
+            LinearLayout.LayoutParams(
+                90,
+                90
+            )
         )
 
         val titleView = TextView(this).apply {
@@ -80,7 +93,6 @@ class MainActivity : Activity() {
         }
 
         header.addView(titleView)
-
         root.addView(header)
 
         val scroll = ScrollView(this)
@@ -101,7 +113,9 @@ class MainActivity : Activity() {
             )
         )
 
-        root.addView(createNavigation())
+        root.addView(
+            createNavigation()
+        )
 
         return Pair(root, content)
     }
@@ -127,11 +141,20 @@ class MainActivity : Activity() {
                 textSize = 11f
 
                 setOnClickListener {
+
                     when (name) {
-                        "Home" -> showCommandCenter()
-                        "Agents" -> showAgents()
-                        "Tasks" -> showTasks()
-                        "Content" -> showContent()
+
+                        "Home" ->
+                            showCommandCenter()
+
+                        "Agents" ->
+                            showAgents()
+
+                        "Tasks" ->
+                            showTasks()
+
+                        "Content" ->
+                            showContent()
                     }
                 }
             }
@@ -151,7 +174,9 @@ class MainActivity : Activity() {
 
     private fun showCommandCenter() {
 
-        val pair = createRoot("COMMAND CENTER")
+        val pair =
+            createRoot("COMMAND CENTER")
+
         val root = pair.first
         val content = pair.second
 
@@ -165,7 +190,9 @@ class MainActivity : Activity() {
         content.addView(commandInput)
 
         val execute = Button(this).apply {
+
             text = "EXECUTE COMMAND"
+
             setOnClickListener {
                 sendCommand()
             }
@@ -217,7 +244,9 @@ class MainActivity : Activity() {
 
     private fun showAgents() {
 
-        val pair = createRoot("AI AGENTS")
+        val pair =
+            createRoot("AI AGENTS")
+
         val root = pair.first
         val content = pair.second
 
@@ -233,6 +262,7 @@ class MainActivity : Activity() {
         agents.forEach { agent ->
 
             val button = Button(this).apply {
+
                 text = agent
 
                 setOnClickListener {
@@ -246,7 +276,12 @@ class MainActivity : Activity() {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 ).apply {
-                    setMargins(0, 5, 0, 5)
+                    setMargins(
+                        0,
+                        5,
+                        0,
+                        5
+                    )
                 }
             )
         }
@@ -257,55 +292,66 @@ class MainActivity : Activity() {
     private fun openAgent(agent: String) {
 
         val pair = createRoot(agent)
+
         val root = pair.first
         val content = pair.second
 
-        val description = TextView(this).apply {
-            text = "$agent\n\nReady to receive Founder commands."
-            textSize = 18f
-            setTextColor(Color.WHITE)
-            setPadding(5, 15, 5, 20)
-        }
+        val description =
+            TextView(this).apply {
+
+                text =
+                    "$agent\n\nReady to receive Founder commands."
+
+                textSize = 18f
+                setTextColor(Color.WHITE)
+                setPadding(
+                    5,
+                    15,
+                    5,
+                    20
+                )
+            }
 
         content.addView(description)
 
-        val input = EditText(this).apply {
-            hint = "$agent command..."
-            setHintTextColor(Color.GRAY)
-            setTextColor(Color.WHITE)
-            textSize = 16f
-        }
+        val input =
+            EditText(this).apply {
+
+                hint = "$agent command..."
+                setHintTextColor(Color.GRAY)
+                setTextColor(Color.WHITE)
+                textSize = 16f
+            }
 
         content.addView(input)
 
         val run = Button(this).apply {
+
             text = "RUN $agent"
 
             setOnClickListener {
 
-                val command = input.text.toString().trim()
+                val command =
+                    input.text.toString().trim()
 
                 if (command.isEmpty()) {
+
                     Toast.makeText(
                         this@MainActivity,
                         "Command empty hai",
                         Toast.LENGTH_SHORT
                     ).show()
+
                 } else {
 
-                    val routedCommand =
+                    commandInput =
+                        EditText(this@MainActivity)
+
+                    commandInput.setText(
                         "$agent: $command"
+                    )
 
-                    if (::statusText.isInitialized) {
-                        statusText.text =
-                            "COMMAND READY\n\n$routedCommand"
-                    }
-
-                    Toast.makeText(
-                        this@MainActivity,
-                        "$agent selected",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    sendCommand()
                 }
             }
         }
@@ -317,7 +363,9 @@ class MainActivity : Activity() {
 
     private fun showTasks() {
 
-        val pair = createRoot("TASKS")
+        val pair =
+            createRoot("TASKS")
+
         val root = pair.first
         val content = pair.second
 
@@ -327,10 +375,23 @@ class MainActivity : Activity() {
             "Founder tasks"
         )
 
-        addCard(
-            content,
-            "⏳ PENDING APPROVAL",
-            "Founder Approval required"
+        val approvalButton =
+            Button(this).apply {
+
+                text =
+                    "⏳ VIEW PENDING APPROVALS"
+
+                setOnClickListener {
+                    loadPendingApprovals()
+                }
+            }
+
+        content.addView(
+            approvalButton,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         )
 
         addCard(
@@ -344,7 +405,9 @@ class MainActivity : Activity() {
 
     private fun showContent() {
 
-        val pair = createRoot("CONTENT")
+        val pair =
+            createRoot("CONTENT")
+
         val root = pair.first
         val content = pair.second
 
@@ -375,12 +438,22 @@ class MainActivity : Activity() {
         description: String
     ) {
 
-        val card = TextView(this).apply {
-            text = "$title\n$description"
-            textSize = 16f
-            setTextColor(Color.WHITE)
-            setPadding(20, 20, 20, 20)
-        }
+        val card =
+            TextView(this).apply {
+
+                text =
+                    "$title\n$description"
+
+                textSize = 16f
+                setTextColor(Color.WHITE)
+
+                setPadding(
+                    20,
+                    20,
+                    20,
+                    20
+                )
+            }
 
         parent.addView(
             card,
@@ -388,27 +461,30 @@ class MainActivity : Activity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply {
-                setMargins(0, 6, 0, 6)
+
+                setMargins(
+                    0,
+                    6,
+                    0,
+                    6
+                )
             }
         )
     }
 
     private fun sendCommand() {
 
-        val command = commandInput.text.toString().trim()
+        val command =
+            commandInput.text.toString().trim()
 
         if (command.isEmpty()) {
+
             Toast.makeText(
                 this,
                 "Founder command empty hai",
                 Toast.LENGTH_SHORT
             ).show()
-            return
-        }
 
-        if (backendUrl == "BACKEND_URL") {
-            statusText.text =
-                "COMMAND READY\n\nBackend deployment pending."
             return
         }
 
@@ -419,46 +495,104 @@ class MainActivity : Activity() {
 
             try {
 
-                val json = JSONObject()
-                    .put("command", command)
+                val json =
+                    JSONObject()
+                        .put(
+                            "command",
+                            command
+                        )
 
-                val body = json.toString()
-                    .toRequestBody(
-                        "application/json".toMediaType()
-                    )
+                val body =
+                    json.toString()
+                        .toRequestBody(
+                            "application/json"
+                                .toMediaType()
+                        )
 
-                val request = Request.Builder()
-                    .url("$backendUrl/command")
-                    .addHeader(
-                        "X-Udaan-API-Key",
-                        founderApiKey
-                    )
-                    .post(body)
-                    .build()
+                val request =
+                    Request.Builder()
+                        .url(
+                            "$backendUrl/command"
+                        )
+                        .addHeader(
+                            "X-Udaan-API-Key",
+                            founderApiKey
+                        )
+                        .post(body)
+                        .build()
 
-                client.newCall(request).execute().use { response ->
+                client
+                    .newCall(request)
+                    .execute()
+                    .use { response ->
 
-                    val result =
-                        response.body?.string() ?: ""
+                        val result =
+                            response.body
+                                ?.string()
+                                ?: ""
 
-                    runOnUiThread {
+                        runOnUiThread {
 
-                        statusText.text =
-                            if (response.isSuccessful) {
-                                "UDAAN AI RESPONSE\n\n$result"
-                            } else {
-                                "BACKEND ERROR\n\nHTTP ${response.code}\n$result"
-                            }
+                            statusText.text =
+                                if (response.isSuccessful) {
+
+                                    "UDAAN AI RESPONSE\n\n$result"
+
+                                } else {
+
+                                    "BACKEND ERROR\n\n" +
+                                            "HTTP ${response.code}\n" +
+                                            result
+                                }
+                        }
                     }
-                }
 
             } catch (error: Exception) {
 
                 runOnUiThread {
+
                     statusText.text =
-                        "BACKEND CONNECTION FAILED\n\n${error.message}"
+                        "BACKEND CONNECTION FAILED\n\n" +
+                                "${error.message}"
                 }
             }
         }.start()
     }
-}
+
+    // ==========================================
+    // PENDING APPROVALS
+    // ==========================================
+
+    private fun loadPendingApprovals() {
+
+        Toast.makeText(
+            this,
+            "Pending approvals loading...",
+            Toast.LENGTH_SHORT
+        ).show()
+
+        Thread {
+
+            try {
+
+                val request =
+                    Request.Builder()
+                        .url(
+                            "$backendUrl/approvals"
+                        )
+                        .addHeader(
+                            "X-Udaan-API-Key",
+                            founderApiKey
+                        )
+                        .get()
+                        .build()
+
+                client
+                    .newCall(request)
+                    .execute()
+                    .use { response ->
+
+                        val result =
+                            response.body
+                                ?.string()
+                               
