@@ -380,45 +380,33 @@ content.addView(
 
     private fun showTasks() {
 
-        val pair =
-            createRoot("TASKS")
+    val pair = createRoot("TASKS")
+    val root = pair.first
+    val content = pair.second
 
-        val root = pair.first
-        val content = pair.second
+    addCard(
+        content,
+        "📋 ACTIVE TASKS",
+        "Founder tasks"
+    )
 
-        addCard(
-            content,
-            "📋 ACTIVE TASKS",
-            "Founder tasks"
-        )
+    addCard(
+        content,
+        "⏳ PENDING APPROVAL",
+        "Loading Founder Approval queue..."
+    )
 
-        val approvalButton =
-            Button(this).apply {
+    addCard(
+        content,
+        "✅ COMPLETED",
+        "Completed AI tasks"
+    )
 
-                text =
-                    "⏳ VIEW PENDING APPROVALS"
+    setContentView(root)
 
-                setOnClickListener {
-                    loadPendingApprovals()
-                }
-            }
-
-        content.addView(
-            approvalButton,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        addCard(
-            content,
-            "✅ COMPLETED",
-            "Completed AI tasks"
-        )
-
-        setContentView(root)
-    }
+    // Automatically load Founder Approval queue
+    loadPendingApprovals()
+}
 
     private fun showContent() {
 
