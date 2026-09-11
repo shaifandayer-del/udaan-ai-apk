@@ -26,7 +26,7 @@ class MainActivity : Activity() {
         .readTimeout(60, TimeUnit.SECONDS)
         .build()
 
-    private val backendUrl = "BACKEND_URL"
+    private val backendUrl = "https://udaan-ai-apk-1.onrender.com"
     private val founderApiKey = "FOUNDER_API_KEY"
 
     private lateinit var statusText: TextView
