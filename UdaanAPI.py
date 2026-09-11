@@ -15,11 +15,23 @@ FOUNDER_API_KEY = os.environ.get("UDAAN_FOUNDER_API_KEY", "")
 
 def is_authorized():
     provided_key = request.headers.get("X-Udaan-API-Key", "")
+    return bool(FOUNDER_API_KEY) and provided_key == FOUNDER_API_KEY
 
-    if not FOUNDER_API_KEY:
-        return False
 
-    return provided_key == FOUNDER_API_KEY
+def handle_command(command):
+    """
+    Internal Python compatibility function.
+    Used by UDAAN AI integration tests and internal callers.
+    """
+    command = str(command).strip()
+
+    if not command:
+        return {
+            "status": "FAILED",
+            "message": "Command empty hai."
+        }
+
+    return execute_command(command)
 
 
 @app.route("/", methods=["GET"])
@@ -60,8 +72,9 @@ def command():
         }), 400
 
     try:
-        result = execute_command(founder_command)
+        result = handle_command(founder_command)
         return jsonify(result)
+
     except Exception as error:
         return jsonify({
             "status": "FAILED",
