@@ -8,7 +8,7 @@ import android.view.Gravity
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
@@ -713,12 +713,12 @@ class MainActivity : AppCompatActivity() {
             put("command", command)
         }
 
-        val requestBody =
-            RequestBody.create(
-                "application/json".toMediaType()
-                json.toString()
-            )
-
+        
+val requestBody =
+    RequestBody.create(
+        "application/json".toMediaType(),
+        json.toString()
+    )
         val request = Request.Builder()
             .url("$backendUrl/command")
             .addHeader(
