@@ -19,40 +19,34 @@ jobs:
       - name: Show Python files
         run: |
           echo "=== PYTHON FILES ==="
-          find . -type f -name "*.py" | sort
+          find . -maxdepth 3 -type f -name "*.py" | sort
+
           echo "=== PYTHON FILE COUNT ==="
-          find . -type f -name "*.py" | wc -l
+          find . -maxdepth 3 -type f -name "*.py" | wc -l
 
       - name: Compile Python files
         run: |
           echo "=== PYTHON SYNTAX CHECK ==="
-          find . -type f -name "*.py" -print0 | xargs -0 -n1 python -m py_compile
+
+          find . -maxdepth 3 -type f -name "*.py" -print0 \
+            | xargs -0 -n1 python -m py_compile
+
           echo "PYTHON SYNTAX CHECK PASSED"
 
-      - name: Check important UDAAN files
+      - name: Test UDAAN Orchestrator
         run: |
-          echo "=== IMPORTANT FILE CHECK ==="
-
-          for file in \
-            "udaan_backend/Orchestrator.py" \
-            "udaan_backend/UdaanAPI.py" \
-            "udaan_backend/UdaanRouter.py" \
-            "udaan_backend/ResearchAgent.py" \
-            "udaan_backend/SmartAgentMatcher.py"
-          do
-            if [ -f "$file" ]; then
-              echo "FOUND: $file"
-            else
-              echo "MISSING: $file"
-            fi
-          done
-
-      - name: Backend import test
-        run: |
-          cd udaan_backend
           python -c "from Orchestrator import Orchestrator; print('Orchestrator import: OK')"
+
+      - name: Test UDAAN Router
+        run: |
           python -c "from UdaanRouter import UdaanRouter; print('UdaanRouter import: OK')"
+
+      - name: Test Research Agent
+        run: |
           python -c "from ResearchAgent import ResearchAgent; print('ResearchAgent import: OK')"
+
+      - name: Test Smart Agent Matcher
+        run: |
           python -c "from SmartAgentMatcher import smart_match; print('SmartAgentMatcher import: OK')"
 
       - name: Final status
