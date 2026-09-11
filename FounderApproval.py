@@ -1,4 +1,8 @@
-# FounderApproval.py
+# ==========================================
+# UDAAN AI - FOUNDER APPROVAL
+# STEP 96
+# Persistent Approval + Developer Build
+# ==========================================
 
 import time
 
@@ -13,13 +17,30 @@ from ApprovalDatabase import (
 _APPROVAL_QUEUE = []
 
 
+PROTECTED_ACTIONS = {
+    "UPLOAD_VIDEO",
+    "UPLOAD_YOUTUBE",
+    "UPLOAD_INSTAGRAM",
+    "PUBLISH_CONTENT",
+    "BUILD_APP",
+    "BUILD_SOFTWARE",
+    "DEPLOY_APP",
+    "DEPLOY_SOFTWARE",
+    "DELETE_PROJECT",
+}
+
+
 def request_approval(
     action,
     platform=None,
     file_path=None,
     title=None,
-    description=None
+    description=None,
+    command=None,
+    metadata=None
 ):
+
+    action = str(action).strip().upper()
 
     approval_id = "APR-" + str(
         int(time.time() * 1000)
@@ -32,7 +53,12 @@ def request_approval(
         "platform": platform,
         "file_path": file_path,
         "title": title,
-        "description": description
+        "description": description,
+        "command": command,
+        "metadata": metadata or {},
+        "protected_action": (
+            action in PROTECTED_ACTIONS
+        )
     }
 
     _APPROVAL_QUEUE.append(item)
@@ -41,6 +67,42 @@ def request_approval(
     save_approval(item)
 
     return item
+
+
+def request_developer_build(
+    command,
+    project_name=None,
+    description=None
+):
+    """
+    Developer AI ke app/software build request
+    ko Founder Approval queue mein bhejta hai.
+
+    Actual build approval ke baad hi external
+    execution layer se kiya jayega.
+    """
+
+    if not command or not str(command).strip():
+
+        return {
+            "status": "FAILED",
+            "message": "Developer build command empty hai."
+        }
+
+    return request_approval(
+        action="BUILD_APP",
+        platform="Android",
+        title=project_name or "UDAAN Generated App",
+        description=(
+            description
+            or "Developer AI app build request."
+        ),
+        command=str(command).strip(),
+        metadata={
+            "source": "Developer AI",
+            "build_type": "application"
+        }
+    )
 
 
 def get_pending_approvals():
@@ -136,6 +198,11 @@ def get_approval(approval_id):
     return get_approval_from_db(
         approval_id
     )
+
+
+def is_protected_action(action):
+
+    return str(action).strip().upper() in PROTECTED_ACTIONS
 
 
 if __name__ == "__main__":
