@@ -1,7 +1,10 @@
-name: Build UDAAN AI APK
+name: UDAAN AI Android Build
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
@@ -11,41 +14,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java 17
+      - name: Setup JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
+          cache: gradle
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.7'
-
-      - name: Check project structure
-        run: |
-          echo "=== ROOT ==="
-          pwd
-          ls -la
-          echo "=== SETTINGS ==="
-          ls -la settings.gradle
-          echo "=== BUILD ==="
-          ls -la build.gradle
-          echo "=== APP ==="
-          ls -la app
-          echo "=== ALL FILES ==="
-          find . -maxdepth 6 -type f | sort
+      - name: Grant Gradle permission
+        run: chmod +x ./gradlew
 
       - name: Build UDAAN AI APK
-        run: |
-          gradle --stop
-          gradle assembleDebug --stacktrace
+        env:
+          UDAAN_FOUNDER_API_KEY: ${{ secrets.UDAAN_FOUNDER_API_KEY }}
+        run: ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: UDAAN-AI-APK
+          name: UDAAN-AI-debug
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+```0
