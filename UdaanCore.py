@@ -1,6 +1,7 @@
 # ==========================================
 # UDAAN AI - CORE
 # Central AI Execution Layer
+# STEP 95
 # ==========================================
 
 import importlib
@@ -26,39 +27,51 @@ KEYWORDS = {
         "research", "search", "find", "trend",
         "competitor", "information"
     ],
+
     "Content AI": [
         "content", "script", "article",
         "post idea", "caption", "write"
     ],
+
     "Creative AI": [
         "creative", "thumbnail", "design",
         "visual", "image"
     ],
+
     "Video AI": [
         "video", "reel", "short", "editing"
     ],
+
     "Social AI": [
         "instagram", "facebook",
         "social media", "social"
     ],
+
     "YouTube AI": [
         "youtube", "youtube video",
         "youtube channel", "upload"
     ],
+
     "Analytics AI": [
         "analytics", "views",
         "retention", "performance",
         "report", "data"
     ],
+
     "Marketing AI": [
         "marketing", "campaign",
         "growth", "promotion"
     ],
+
     "Developer AI": [
         "developer", "coding",
         "code", "app banao",
-        "software", "bug"
+        "app bana", "android app",
+        "software", "software banao",
+        "website banao", "build app",
+        "create app", "bug", "debug"
     ],
+
     "Automation AI": [
         "automation", "automate",
         "automatic", "repeat"
@@ -67,6 +80,7 @@ KEYWORDS = {
 
 
 def get_core_state():
+
     return {
         "system": "UDAAN AI CORE",
         "status": "ONLINE",
@@ -77,10 +91,13 @@ def get_core_state():
 
 
 def detect_agent(command):
-    command_lower = command.lower()
+
+    command_lower = str(command).lower().strip()
 
     for agent, words in KEYWORDS.items():
+
         for word in words:
+
             if word in command_lower:
                 return agent
 
@@ -88,6 +105,7 @@ def detect_agent(command):
 
 
 def find_entry_point(module):
+
     for function_name in [
         "execute",
         "run",
@@ -100,7 +118,12 @@ def find_entry_point(module):
         "publish",
         "upload",
     ]:
-        function = getattr(module, function_name, None)
+
+        function = getattr(
+            module,
+            function_name,
+            None
+        )
 
         if callable(function):
             return function
@@ -113,6 +136,7 @@ def execute_agent(agent_name, command):
     module_name = AGENT_MODULES.get(agent_name)
 
     if not module_name:
+
         return {
             "status": "SUCCESS",
             "agent": agent_name,
@@ -121,9 +145,13 @@ def execute_agent(agent_name, command):
         }
 
     try:
-        module = importlib.import_module(module_name)
+
+        module = importlib.import_module(
+            module_name
+        )
 
     except Exception as error:
+
         return {
             "status": "FAILED",
             "agent": agent_name,
@@ -135,6 +163,7 @@ def execute_agent(agent_name, command):
     function = find_entry_point(module)
 
     if not function:
+
         return {
             "status": "FAILED",
             "agent": agent_name,
@@ -143,22 +172,38 @@ def execute_agent(agent_name, command):
         }
 
     try:
+
         result = function(command)
 
+        # Agent ka original status preserve hoga.
+        agent_status = "SUCCESS"
+
+        if isinstance(result, dict):
+
+            agent_status = result.get(
+                "status",
+                "SUCCESS"
+            )
+
         return {
-            "status": "SUCCESS",
+            "status": agent_status,
             "agent": agent_name,
             "command": command,
-            "message": f"{agent_name} executed successfully.",
+            "message": (
+                f"{agent_name} processed the command."
+            ),
             "result": result
         }
 
     except Exception as error:
+
         return {
             "status": "FAILED",
             "agent": agent_name,
             "command": command,
-            "message": f"{agent_name} execution failed.",
+            "message": (
+                f"{agent_name} execution failed."
+            ),
             "error": str(error)
         }
 
@@ -168,6 +213,7 @@ def process_command(command):
     command = str(command).strip()
 
     if not command:
+
         return {
             "status": "FAILED",
             "message": "Command empty hai.",
@@ -181,7 +227,10 @@ def process_command(command):
     print("Command :", command)
     print("Agent   :", agent)
 
-    result = execute_agent(agent, command)
+    result = execute_agent(
+        agent,
+        command
+    )
 
     result["core_state"] = get_core_state()
 
@@ -196,7 +245,9 @@ if __name__ == "__main__":
 
     print(get_core_state())
 
-    command = input("\nUDAAN command: ").strip()
+    command = input(
+        "\nUDAAN command: "
+    ).strip()
 
     print()
     print(process_command(command))
