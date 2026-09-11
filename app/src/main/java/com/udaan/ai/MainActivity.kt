@@ -1,16 +1,15 @@
 package com.udaan.ai
 
+import android.app.Activity
 import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : Activity() {
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
@@ -23,15 +22,18 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        Toast.makeText(
+            this,
+            "UDAAN AI Starting...",
+            Toast.LENGTH_LONG
+        ).show()
+
         testBackendConnection()
     }
 
     private fun testBackendConnection() {
-
         Thread {
-
             try {
-
                 val request = Request.Builder()
                     .url("$backendUrl/status")
                     .addHeader(
@@ -42,8 +44,6 @@ class MainActivity : AppCompatActivity() {
                     .build()
 
                 client.newCall(request).execute().use { response ->
-
-                    val result = response.body?.string() ?: ""
 
                     runOnUiThread {
 
@@ -66,7 +66,6 @@ class MainActivity : AppCompatActivity() {
             } catch (error: Exception) {
 
                 runOnUiThread {
-
                     Toast.makeText(
                         this,
                         "Backend Connection Failed",
