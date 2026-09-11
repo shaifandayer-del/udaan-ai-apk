@@ -208,7 +208,24 @@ class MainActivity : Activity() {
         }
 
         content.addView(statusText)
+val statusButton = Button(this).apply {
 
+    text = "🔄 CHECK UDAAN AI STATUS"
+
+    setOnClickListener {
+        checkBackendStatus()
+    }
+}
+
+content.addView(
+    statusButton,
+    LinearLayout.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT,
+        ViewGroup.LayoutParams.WRAP_CONTENT
+    ).apply {
+        setMargins(0, 5, 0, 15)
+    }
+)
         addCard(
             content,
             "🧠 MAIN AI",
