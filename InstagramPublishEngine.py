@@ -1,9 +1,3 @@
-Step 135 — File name: InstagramPublishEngine.py
-
-# ==========================================
-# UDAAN AI - INSTAGRAM PUBLISH ENGINE
-# STEP 135
-# ==========================================
 
 import os
 import requests
