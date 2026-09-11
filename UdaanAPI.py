@@ -1,25 +1,27 @@
-# UdaanAPI.py
-# Udaan AI - Local API Server
+# ==========================================
+# UDAAN AI - API SERVER
+# Founder API Key Security
+# ==========================================
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
+import os
 
 from UdaanCommandCenter import (
     execute_command,
     get_command_center_status
 )
 
-
 HOST = "0.0.0.0"
 PORT = 8080
 
+FOUNDER_API_KEY = os.environ.get(
+    "UDAAN_FOUNDER_API_KEY",
+    ""
+)
+
 
 def api_status():
-    """
-    Compatibility status function
-    used by PythonFunctionalTest and other modules.
-    """
-
     try:
         center_status = get_command_center_status()
     except Exception as error:
@@ -38,12 +40,19 @@ def api_status():
     }
 
 
-def handle_command(command):
-    """
-    Compatibility command function.
-    Sends command directly to Udaan Command Center.
-    """
+def is_authorized(handler):
+    if not FOUNDER_API_KEY:
+        return False
 
+    provided_key = handler.headers.get(
+        "X-Udaan-API-Key",
+        ""
+    )
+
+    return provided_key == FOUNDER_API_KEY
+
+
+def handle_command(command):
     if not command:
         return {
             "status": "FAILED",
@@ -51,7 +60,6 @@ def handle_command(command):
         }
 
     try:
-
         result = execute_command(command)
 
         return {
@@ -61,7 +69,6 @@ def handle_command(command):
         }
 
     except Exception as error:
-
         return {
             "status": "FAILED",
             "command": command,
@@ -72,7 +79,6 @@ def handle_command(command):
 class UdaanAPIHandler(BaseHTTPRequestHandler):
 
     def send_json(self, data, status=200):
-
         body = json.dumps(
             data,
             ensure_ascii=False,
@@ -92,47 +98,47 @@ class UdaanAPIHandler(BaseHTTPRequestHandler):
         )
 
         self.end_headers()
-
         self.wfile.write(body)
 
     def do_GET(self):
 
         if self.path == "/":
-
             self.send_json({
                 "name": "Udaan AI API",
                 "status": "ONLINE",
                 "service": "Command Center"
             })
-
             return
 
         if self.path == "/status":
 
-            self.send_json(
-                api_status()
-            )
+            if not is_authorized(self):
+                self.send_json({
+                    "status": "UNAUTHORIZED",
+                    "message": "Founder API key required."
+                }, 401)
+                return
 
+            self.send_json(api_status())
             return
 
-        self.send_json(
-            {
-                "error": "Endpoint not found"
-            },
-            404
-        )
+        self.send_json({
+            "error": "Endpoint not found"
+        }, 404)
 
     def do_POST(self):
 
         if self.path != "/command":
+            self.send_json({
+                "error": "Endpoint not found"
+            }, 404)
+            return
 
-            self.send_json(
-                {
-                    "error": "Endpoint not found"
-                },
-                404
-            )
-
+        if not is_authorized(self):
+            self.send_json({
+                "status": "UNAUTHORIZED",
+                "message": "Founder API key required."
+            }, 401)
             return
 
         try:
@@ -165,17 +171,13 @@ class UdaanAPIHandler(BaseHTTPRequestHandler):
 
         except Exception as error:
 
-            self.send_json(
-                {
-                    "status": "FAILED",
-                    "message": "API request failed.",
-                    "error": str(error)
-                },
-                500
-            )
+            self.send_json({
+                "status": "FAILED",
+                "message": "API request failed.",
+                "error": str(error)
+            }, 500)
 
     def log_message(self, format, *args):
-
         print(
             "🌐 API:",
             format % args
@@ -200,6 +202,9 @@ def start_server():
     print("🔌 Port   :", PORT)
 
     print()
+    print("🔐 Founder API Key :", "ENABLED")
+
+    print()
     print("Endpoints:")
     print("GET  /")
     print("GET  /status")
@@ -210,7 +215,6 @@ def start_server():
     print("=" * 60)
 
     try:
-
         server.serve_forever()
 
     except KeyboardInterrupt:
@@ -219,10 +223,8 @@ def start_server():
         print("🛑 Server stopping...")
 
     finally:
-
         server.server_close()
 
 
 if __name__ == "__main__":
-
     start_server()
