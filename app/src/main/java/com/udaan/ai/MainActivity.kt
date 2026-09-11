@@ -36,108 +36,22 @@ class MainActivity : Activity() {
     private lateinit var statusText: TextView
     private lateinit var commandInput: EditText
 
-    
     data class UdaanAgent(
-    val name: String,
-    val module: String,
-    val description: String,
-    val status: String,
-    val functions: List<String>
-)
-
-private var dynamicAgents = mutableListOf<UdaanAgent>()    
-
-
-
-private var dynamicAgents = mutableListOf<UdaanAgent>()
+        val name: String,
+        val module: String,
+        val description: String,
+        val status: String,
+        val functions: List<String>
     )
-private fun loadDynamicAgents() {
 
-    Thread {
+    private var dynamicAgents = mutableListOf<UdaanAgent>()
 
-        try {
-
-            val request =
-                Request.Builder()
-                    .url("$backendUrl/agents")
-                    .addHeader(
-                        "X-Udaan-API-Key",
-                        founderApiKey
-                    )
-                    .get()
-                    .build()
-
-            client.newCall(request)
-                .execute()
-                .use { response ->
-
-                    val result =
-                        response.body?.string() ?: ""
-
-                    if (!response.isSuccessful) {
-                        return@use
-                    }
-
-                    val json =
-                        JSONObject(result)
-
-                    val agentArray =
-                        json.optJSONArray("agents")
-                            ?: JSONArray()
-
-                    val loadedAgents =
-                        mutableListOf<UdaanAgent>()
-
-                    for (i in 0 until agentArray.length()) {
-
-                        val agent =
-                            agentArray.getJSONObject(i)
-
-                        val functions =
-                            mutableListOf<String>()
-
-                        val functionArray =
-                            agent.optJSONArray("functions")
-
-                        if (functionArray != null) {
-
-                            for (j in 0 until functionArray.length()) {
-                                functions.add(
-                                    functionArray.getString(j)
-                                )
-                            }
-                        }
-
-                        loadedAgents.add(
-                            UdaanAgent(
-                                name = agent.optString("name"),
-                                module = agent.optString("module"),
-                                description = agent.optString("description"),
-                                status = agent.optString("status"),
-                                functions = functions
-                            )
-                        )
-                    }
-
-                    runOnUiThread {
-
-                        dynamicAgents.clear()
-                        dynamicAgents.addAll(loadedAgents)
-
-                    }
-                }
-
-        } catch (_: Exception) {
-            // Backend unavailable — existing UI continues normally
-        }
-
-    }.start()
-}
     override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    showCommandCenter()
-    loadDynamicAgents()
-}
+        super.onCreate(savedInstanceState)
+
+        showCommandCenter()
+        loadDynamicAgents()
+    }
 
     private fun createRoot(
         title: String
@@ -303,7 +217,7 @@ private fun loadDynamicAgents() {
         addCard(
             content,
             "🤖 AI AGENTS",
-            "10 specialized AI agents"
+            "${dynamicAgents.size} specialized AI agents"
         )
 
         addCard(
@@ -343,47 +257,49 @@ private fun loadDynamicAgents() {
 
         content.addView(info)
 
-        dynamicAgents.forEach { agent ->
+        if (dynamicAgents.isEmpty()) {
 
-    val button = Button(this).apply {
-
-        text = "${agent.name}\n${agent.status}"
-
-        setOnClickListener {
-            openAgent(agent)
-        }
-    }
-
-    content.addView(
-        button,
-        LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply {
-            setMargins(0, 5, 0, 5)
-        }
-    )
-
-        private fun openAgent(agent: UdaanAgent)
+            val loading = TextView(this).apply {
+                text = "🔄 Loading AI Agents..."
+                textSize = 16f
+                setTextColor(Color.WHITE)
+                setPadding(5, 20, 5, 20)
             }
 
-            content.addView(
-                button,
-                LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    setMargins(0, 5, 0, 5)
+            content.addView(loading)
+
+        } else {
+
+            dynamicAgents.forEach { agent ->
+
+                val button = Button(this).apply {
+
+                    text =
+                        "${agent.name}\n${agent.status}"
+
+                    setOnClickListener {
+                        openAgent(agent)
+                    }
                 }
-            )
+
+                content.addView(
+                    button,
+                    LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        setMargins(0, 5, 0, 5)
+                    }
+                )
+            }
         }
 
         setContentView(root)
     }
 
- {
+    private fun openAgent(agent: UdaanAgent) {
 
-        val pair = createRoot(agent)
+        val pair = createRoot(agent.name)
 
         val root = pair.first
         val content = pair.second
@@ -391,7 +307,11 @@ private fun loadDynamicAgents() {
         val description = TextView(this).apply {
 
             text =
-                "$agent\n\nReady to receive Founder commands."
+                "${agent.name}\n\n" +
+                "${agent.description}\n\n" +
+                "Module: ${agent.module}\n" +
+                "Status: ${agent.status}\n\n" +
+                "Available Functions: ${agent.functions.size}"
 
             textSize = 18f
             setTextColor(Color.WHITE)
@@ -402,7 +322,7 @@ private fun loadDynamicAgents() {
 
         val input = EditText(this).apply {
 
-            hint = "$agent command..."
+            hint = "${agent.name} command..."
             setHintTextColor(Color.GRAY)
             setTextColor(Color.WHITE)
             textSize = 16f
@@ -412,7 +332,7 @@ private fun loadDynamicAgents() {
 
         val run = Button(this).apply {
 
-            text = "RUN $agent"
+            text = "RUN ${agent.name}"
 
             setOnClickListener {
 
@@ -433,14 +353,15 @@ private fun loadDynamicAgents() {
                         EditText(this@MainActivity)
 
                     commandInput.setText(
-                        "$agent: $command"
+                        "${agent.name}: $command"
                     )
 
-                    statusText = TextView(this@MainActivity).apply {
-                        text = "🧠 UDAAN AI\n\nThinking..."
-                        textSize = 16f
-                        setTextColor(Color.WHITE)
-                    }
+                    statusText =
+                        TextView(this@MainActivity).apply {
+                            text = "🧠 UDAAN AI\n\nThinking..."
+                            textSize = 16f
+                            setTextColor(Color.WHITE)
+                        }
 
                     sendCommand()
                 }
@@ -534,6 +455,93 @@ private fun loadDynamicAgents() {
                 setMargins(0, 6, 0, 6)
             }
         )
+    }
+
+    private fun loadDynamicAgents() {
+
+        Thread {
+
+            try {
+
+                val request =
+                    Request.Builder()
+                        .url("$backendUrl/agents")
+                        .addHeader(
+                            "X-Udaan-API-Key",
+                            founderApiKey
+                        )
+                        .get()
+                        .build()
+
+                client.newCall(request)
+                    .execute()
+                    .use { response ->
+
+                        val result =
+                            response.body?.string() ?: ""
+
+                        if (!response.isSuccessful) {
+                            return@use
+                        }
+
+                        val json =
+                            JSONObject(result)
+
+                        val agentArray =
+                            json.optJSONArray("agents")
+                                ?: JSONArray()
+
+                        val loadedAgents =
+                            mutableListOf<UdaanAgent>()
+
+                        for (i in 0 until agentArray.length()) {
+
+                            val agent =
+                                agentArray.getJSONObject(i)
+
+                            val functions =
+                                mutableListOf<String>()
+
+                            val functionArray =
+                                agent.optJSONArray("functions")
+
+                            if (functionArray != null) {
+
+                                for (j in 0 until functionArray.length()) {
+
+                                    functions.add(
+                                        functionArray.getString(j)
+                                    )
+                                }
+                            }
+
+                            loadedAgents.add(
+                                UdaanAgent(
+                                    name = agent.optString("name"),
+                                    module = agent.optString("module"),
+                                    description =
+                                        agent.optString("description"),
+                                    status =
+                                        agent.optString("status"),
+                                    functions = functions
+                                )
+                            )
+                        }
+
+                        runOnUiThread {
+
+                            dynamicAgents.clear()
+                            dynamicAgents.addAll(
+                                loadedAgents
+                            )
+                        }
+                    }
+
+            } catch (_: Exception) {
+                // Backend unavailable.
+            }
+
+        }.start()
     }
 
     private fun sendCommand() {
