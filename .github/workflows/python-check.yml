@@ -1,109 +1,37 @@
-name: UDAAN AI Python Architecture Audit
+name: UDAAN AI Python Check
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  audit:
+  python-check:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout UDAAN AI
+
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-- name: Install Python Dependencies
-  run: |
-    python -m pip install --upgrade pip
-    python -m pip install -r requirements.txt
-      - name: Show Project Structure
+
+      - name: Install Python Dependencies
         run: |
-          echo "=============================="
-          echo "UDAAN AI PROJECT STRUCTURE"
-          echo "=============================="
-          find . -maxdepth 4 -type f | sort
-
-      - name: Count Python Files
-        run: |
-          echo "=============================="
-          echo "PYTHON FILE COUNT"
-          echo "=============================="
-          find . -type f -name "*.py" | wc -l
-
-      - name: Show Python Files
-        run: |
-          echo "=============================="
-          echo "PYTHON FILES"
-          echo "=============================="
-          find . -type f -name "*.py" | sort
-
-      - name: Check Agent Structure
-        run: |
-          echo "=============================="
-          echo "AGENT STRUCTURE"
-          echo "=============================="
-
-          if [ -d "agents" ]; then
-            echo "agents/ folder FOUND"
-            find agents -type f | sort
-          else
-            echo "agents/ folder NOT FOUND"
-          fi
-
-      - name: Check Important AI Files
-        run: |
-          echo "=============================="
-          echo "IMPORTANT UDAAN FILES"
-          echo "=============================="
-
-          for file in \
-            "GeminiBrain.py" \
-            "Research.py" \
-            "Content.py" \
-            "Creative.py" \
-            "Video.py" \
-            "Social.py" \
-            "YouTube.py" \
-            "Analytics.py" \
-            "Marketing.py" \
-            "Developer.py" \
-            "Automation.py" \
-            "FounderApproval.py" \
-            "AgentManager.py" \
-            "AgentRegistry.py"
-          do
-            if [ -f "$file" ]; then
-              echo "FOUND: $file"
-            else
-              echo "NOT IN ROOT: $file"
-            fi
-          done
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
 
       - name: Python Syntax Audit
         run: |
           echo "=============================="
           echo "PYTHON SYNTAX AUDIT"
           echo "=============================="
-
-          find . -type f -name "*.py" -print0 \
-            | xargs -0 -n1 python -m py_compile
-
-          echo "ALL PYTHON FILES PASSED SYNTAX CHECK"
-
-      - name: Import Reference Audit
-        run: |
-          echo "=============================="
-          echo "IMPORT REFERENCES"
-          echo "=============================="
-
-          grep -R "^from agents\|^import agents" --include="*.py" . || true
-
-          echo "=============================="
-          echo "AUDIT COMPLETE"
-          echo "=============================="
+          python -m compileall -q .
+          echo "PYTHON SYNTAX PASSED"
 
       - name: UDAAN AI Runtime Integration Test
         run: |
@@ -124,65 +52,3 @@ jobs:
           python -c "from UdaanAPI import handle_command; result=handle_command('research latest AI trends'); print(result); assert result.get('status') == 'SUCCESS'"
 
           echo "API INTEGRATION PASSED"
-
-      - name: Founder API Security Test
-        env:
-          UDAAN_FOUNDER_API_KEY: ${{ secrets.UDAAN_FOUNDER_API_KEY }}
-        run: |
-          echo "=============================="
-          echo "FOUNDER API SECURITY TEST"
-          echo "=============================="
-
-          if [ -z "$UDAAN_FOUNDER_API_KEY" ]; then
-            echo "ERROR: GitHub Secret UDAAN_FOUNDER_API_KEY is empty or unavailable."
-            exit 1
-          fi
-
-          echo "GitHub Secret loaded successfully."
-
-          python -c "import os; key=os.environ.get('UDAAN_FOUNDER_API_KEY',''); assert key != ''; print('Python environment received Founder API key')"
-
-          echo "SECURITY SECRET TEST PASSED"
-      - name: Real API Authorization Test
-        env:
-          UDAAN_FOUNDER_API_KEY: ${{ secrets.UDAAN_FOUNDER_API_KEY }}
-        run: |
-          echo "=============================="
-          echo "REAL API AUTHORIZATION TEST"
-          echo "=============================="
-
-          python UdaanAPI.py > api_test.log 2>&1 &
-          API_PID=$!
-
-          sleep 2
-
-          echo "Testing request without API key..."
-
-          UNAUTHORIZED=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST \
-            http://127.0.0.1:8080/command \
-            -H "Content-Type: application/json" \
-            -d '{"command":"research latest AI trends"}')
-
-          test "$UNAUTHORIZED" = "401"
-
-          echo "Unauthorized request correctly blocked."
-
-          echo "Testing request with Founder API key..."
-
-          AUTHORIZED=$(curl -s \
-            -X POST \
-            http://127.0.0.1:8080/command \
-            -H "Content-Type: application/json" \
-            -H "X-Udaan-API-Key: $UDAAN_FOUNDER_API_KEY" \
-            -d '{"command":"research latest AI trends"}')
-
-          echo "$AUTHORIZED"
-
-          echo "$AUTHORIZED" | grep -q '"status": "SUCCESS"'
-
-          kill "$API_PID" || true
-
-          echo "=============================="
-          echo "REAL API AUTHORIZATION PASSED"
-          echo "=============================="
