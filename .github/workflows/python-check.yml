@@ -21,7 +21,6 @@ jobs:
           echo "=============================="
           echo "UDAAN AI PROJECT STRUCTURE"
           echo "=============================="
-
           find . -maxdepth 4 -type f | sort
 
       - name: Count Python Files
@@ -29,7 +28,6 @@ jobs:
           echo "=============================="
           echo "PYTHON FILE COUNT"
           echo "=============================="
-
           find . -type f -name "*.py" | wc -l
 
       - name: Show Python Files
@@ -37,7 +35,6 @@ jobs:
           echo "=============================="
           echo "PYTHON FILES"
           echo "=============================="
-
           find . -type f -name "*.py" | sort
 
       - name: Check Agent Structure
@@ -104,6 +101,7 @@ jobs:
           echo "=============================="
           echo "AUDIT COMPLETE"
           echo "=============================="
+
       - name: UDAAN AI Runtime Integration Test
         run: |
           echo "=============================="
@@ -112,10 +110,19 @@ jobs:
 
           python -c "from UdaanCore import process_command; result=process_command('research latest AI trends'); print(result); assert result.get('status') == 'SUCCESS'"
 
-          echo "=============================="
           echo "RUNTIME INTEGRATION PASSED"
+
+      - name: UDAAN API Integration Test
+        run: |
           echo "=============================="
-            - name: Founder API Security Test
+          echo "UDAAN API INTEGRATION TEST"
+          echo "=============================="
+
+          python -c "from UdaanAPI import handle_command; result=handle_command('research latest AI trends'); print(result); assert result.get('status') == 'SUCCESS'"
+
+          echo "API INTEGRATION PASSED"
+
+      - name: Founder API Security Test
         env:
           UDAAN_FOUNDER_API_KEY: ${{ secrets.UDAAN_FOUNDER_API_KEY }}
         run: |
@@ -132,6 +139,4 @@ jobs:
 
           python -c "import os; key=os.environ.get('UDAAN_FOUNDER_API_KEY',''); assert key != ''; print('Python environment received Founder API key')"
 
-          echo "=============================="
           echo "SECURITY SECRET TEST PASSED"
-          echo "=============================="
