@@ -1,9 +1,3 @@
-File name: YouTubePublishEngine.py
-
-# ==========================================
-# UDAAN AI - YOUTUBE PUBLISH ENGINE
-# STEP 123
-# ==========================================
 
 import os
 import json
