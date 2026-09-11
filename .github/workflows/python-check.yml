@@ -115,3 +115,16 @@ jobs:
           echo "=============================="
           echo "RUNTIME INTEGRATION PASSED"
           echo "=============================="
+      - name: Founder API Security Test
+        env:
+          UDAAN_FOUNDER_API_KEY: ${{ secrets.UDAAN_FOUNDER_API_KEY }}
+        run: |
+          echo "=============================="
+          echo "FOUNDER API SECURITY TEST"
+          echo "=============================="
+
+          python -c "import os; from UdaanAPI import FOUNDER_API_KEY; assert FOUNDER_API_KEY == os.environ['UDAAN_FOUNDER_API_KEY']; assert FOUNDER_API_KEY != ''; print('Founder API key loaded securely')"
+
+          echo "=============================="
+          echo "SECURITY TEST PASSED"
+          echo "=============================="
