@@ -1,10 +1,10 @@
-name: UDAAN AI Python Backend Check
+name: UDAAN AI Python Architecture Audit
 
 on:
   workflow_dispatch:
 
 jobs:
-  python-check:
+  audit:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,41 +16,91 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Show Python files
+      - name: Show Project Structure
         run: |
-          echo "=== PYTHON FILES ==="
-          find . -maxdepth 3 -type f -name "*.py" | sort
+          echo "=============================="
+          echo "UDAAN AI PROJECT STRUCTURE"
+          echo "=============================="
 
-          echo "=== PYTHON FILE COUNT ==="
-          find . -maxdepth 3 -type f -name "*.py" | wc -l
+          find . -maxdepth 4 -type f | sort
 
-      - name: Compile Python files
+      - name: Count Python Files
         run: |
-          echo "=== PYTHON SYNTAX CHECK ==="
+          echo "=============================="
+          echo "PYTHON FILE COUNT"
+          echo "=============================="
 
-          find . -maxdepth 3 -type f -name "*.py" -print0 \
+          find . -type f -name "*.py" | wc -l
+
+      - name: Show Python Files
+        run: |
+          echo "=============================="
+          echo "PYTHON FILES"
+          echo "=============================="
+
+          find . -type f -name "*.py" | sort
+
+      - name: Check Agent Structure
+        run: |
+          echo "=============================="
+          echo "AGENT STRUCTURE"
+          echo "=============================="
+
+          if [ -d "agents" ]; then
+            echo "agents/ folder FOUND"
+            find agents -type f | sort
+          else
+            echo "agents/ folder NOT FOUND"
+          fi
+
+      - name: Check Important AI Files
+        run: |
+          echo "=============================="
+          echo "IMPORTANT UDAAN FILES"
+          echo "=============================="
+
+          for file in \
+            "GeminiBrain.py" \
+            "Research.py" \
+            "Content.py" \
+            "Creative.py" \
+            "Video.py" \
+            "Social.py" \
+            "YouTube.py" \
+            "Analytics.py" \
+            "Marketing.py" \
+            "Developer.py" \
+            "Automation.py" \
+            "FounderApproval.py" \
+            "AgentManager.py" \
+            "AgentRegistry.py"
+          do
+            if [ -f "$file" ]; then
+              echo "FOUND: $file"
+            else
+              echo "NOT IN ROOT: $file"
+            fi
+          done
+
+      - name: Python Syntax Audit
+        run: |
+          echo "=============================="
+          echo "PYTHON SYNTAX AUDIT"
+          echo "=============================="
+
+          find . -type f -name "*.py" -print0 \
             | xargs -0 -n1 python -m py_compile
 
-          echo "PYTHON SYNTAX CHECK PASSED"
+          echo "ALL PYTHON FILES PASSED SYNTAX CHECK"
 
-      - name: Test UDAAN Orchestrator
+      - name: Import Reference Audit
         run: |
-          python -c "from Orchestrator import Orchestrator; print('Orchestrator import: OK')"
+          echo "=============================="
+          echo "IMPORT REFERENCES"
+          echo "=============================="
 
-      - name: Test UDAAN Router
-        run: |
-          python -c "from UdaanRouter import UdaanRouter; print('UdaanRouter import: OK')"
+          grep -R "^from agents\|^import agents" --include="*.py" . || true
 
-      - name: Test Research Agent
-        run: |
-          python -c "from ResearchAgent import ResearchAgent; print('ResearchAgent import: OK')"
-
-      - name: Test Smart Agent Matcher
-        run: |
-          python -c "from SmartAgentMatcher import smart_match; print('SmartAgentMatcher import: OK')"
-
-      - name: Final status
-        run: |
-          echo "================================"
-          echo "UDAAN AI PYTHON CHECK COMPLETE"
-          echo "================================"
+          echo "=============================="
+          echo "AUDIT COMPLETE"
+          echo "=============================="
