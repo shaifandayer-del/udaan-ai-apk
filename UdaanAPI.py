@@ -1,5 +1,56 @@
 import os
+def get_dynamic_agents():
+    agents = []
 
+    agent_files = [
+        ("Research", "Research AI", "Research & trends"),
+        ("Content", "Content AI", "Scripts & captions"),
+        ("Video", "Video AI", "Video generation"),
+        ("YouTube", "YouTube AI", "YouTube workflow"),
+        ("Social", "Social Media AI", "Instagram & social media"),
+        ("Analytics", "Analytics AI", "Insights & reports"),
+        ("Marketing", "Marketing AI", "Campaigns & growth"),
+        ("Developer", "Developer AI", "Apps & software"),
+        ("Automation", "Automation AI", "Workflows & automation"),
+        ("Creative", "Creative AI", "Ideas & design"),
+    ]
+
+    for module_name, display_name, description in agent_files:
+        try:
+            module = importlib.import_module(module_name)
+
+            functions = [
+                name for name in dir(module)
+                if callable(getattr(module, name, None))
+                and not name.startswith("_")
+            ]
+
+            agents.append({
+                "name": display_name,
+                "module": module_name,
+                "description": description,
+                "status": "ONLINE",
+                "functions": functions
+            })
+
+        except Exception as error:
+            agents.append({
+                "name": display_name,
+                "module": module_name,
+                "description": description,
+                "status": "OFFLINE",
+                "functions": [],
+                "error": str(error)
+            })
+
+    return {
+        "status": "SUCCESS",
+        "count": len(agents),
+        "agents": agents
+    }
+    @app.get("/agents")
+def agents_endpoint():
+    return get_dynamic_agents()
 from flask import Flask, jsonify, request
 
 from UdaanCommandCenter import (
