@@ -715,7 +715,7 @@ class MainActivity : AppCompatActivity() {
 
         val requestBody =
             RequestBody.create(
-                MediaType.parse("application/json"),
+                "application/json".toMediaType()
                 json.toString()
             )
 
