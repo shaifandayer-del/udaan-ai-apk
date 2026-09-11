@@ -134,9 +134,10 @@ private fun loadDynamicAgents() {
     }.start()
 }
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        showCommandCenter()
-    }
+    super.onCreate(savedInstanceState)
+    showCommandCenter()
+    loadDynamicAgents()
+}
 
     private fun createRoot(
         title: String
