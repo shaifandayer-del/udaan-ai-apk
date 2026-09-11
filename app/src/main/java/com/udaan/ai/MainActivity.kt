@@ -363,7 +363,8 @@ private fun loadDynamicAgents() {
             setMargins(0, 5, 0, 5)
         }
     )
-}
+
+        private fun openAgent(agent: UdaanAgent)
             }
 
             content.addView(
@@ -380,7 +381,7 @@ private fun loadDynamicAgents() {
         setContentView(root)
     }
 
-    private fun openAgent(agent: String) {
+ {
 
         val pair = createRoot(agent)
 
