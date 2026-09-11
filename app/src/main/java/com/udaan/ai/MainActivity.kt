@@ -678,3 +678,74 @@ content.addView(
                             response.body
                                 ?.string()
                                
+private fun checkBackendStatus() {
+
+    statusText.text =
+        "🔄 UDAAN AI\n\nChecking backend..."
+
+    Thread {
+
+        try {
+
+            val request =
+                Request.Builder()
+                    .url("$backendUrl/status")
+                    .addHeader(
+                        "X-Udaan-API-Key",
+                        founderApiKey
+                    )
+                    .get()
+                    .build()
+
+            client.newCall(request)
+                .execute()
+                .use { response ->
+
+                    val result =
+                        response.body?.string() ?: ""
+
+                    runOnUiThread {
+
+                        if (response.isSuccessful) {
+
+                            try {
+
+                                val json =
+                                    JSONObject(result)
+
+                                statusText.text =
+                                    "🟢 UDAAN AI ONLINE\n\n" +
+                                    "Backend: ONLINE\n" +
+                                    "Core: " +
+                                    json.optString(
+                                        "core_state",
+                                        "UNKNOWN"
+                                    )
+
+                            } catch (error: Exception) {
+
+                                statusText.text =
+                                    "🟢 UDAAN AI ONLINE\n\n$result"
+                            }
+
+                        } else {
+
+                            statusText.text =
+                                "❌ BACKEND ERROR\n\n" +
+                                "HTTP ${response.code}\n\n" +
+                                result
+                        }
+                    }
+                }
+
+        } catch (error: Exception) {
+
+            runOnUiThread {
+
+                statusText.text =
+                    "❌ BACKEND CONNECTION FAILED\n\n" +
+                    "${error.message}"
+            }
+        }
+    }.start()
+}
