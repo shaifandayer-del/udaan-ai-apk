@@ -1,31 +1,21 @@
 package com.udaan.ai
 
-import android.app.Activity
 import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.Gravity
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
-import android.widget.Toast
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
+import android.view.View
+import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
+import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.concurrent.TimeUnit
+import java.io.IOException
 
-class MainActivity : Activity() {
+class MainActivity : AppCompatActivity() {
 
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .build()
+    private val client = OkHttpClient()
 
     private val backendUrl =
         "https://udaan-ai-apk-1.onrender.com"
@@ -33,6 +23,7 @@ class MainActivity : Activity() {
     private val founderApiKey =
         BuildConfig.UDAAN_FOUNDER_API_KEY
 
+    private lateinit var rootLayout: LinearLayout
     private lateinit var statusText: TextView
     private lateinit var commandInput: EditText
 
@@ -53,814 +44,815 @@ class MainActivity : Activity() {
         loadDynamicAgents()
     }
 
-    private fun createRoot(
-        title: String
-    ): Pair<LinearLayout, LinearLayout> {
+    private fun showCommandCenter() {
 
-        val root = LinearLayout(this).apply {
+        rootLayout = createRoot("UDAAN AI")
+
+        val hero = TextView(this).apply {
+            text = "AI COMMAND CENTER"
+            textSize = 28f
+            setTextColor(Color.WHITE)
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            setPadding(20, 35, 20, 8)
+        }
+
+        rootLayout.addView(hero)
+
+        val subtitle = TextView(this).apply {
+            text = "Your personal intelligent AI operating system"
+            textSize = 14f
+            setTextColor(Color.LTGRAY)
+            gravity = Gravity.CENTER
+            setPadding(20, 0, 20, 25)
+        }
+
+        rootLayout.addView(subtitle)
+
+        val onlineCard = createCard()
+
+        val onlineTitle = TextView(this).apply {
+            text = "●  UDAAN CORE"
+            textSize = 18f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.GREEN)
+        }
+
+        onlineCard.addView(onlineTitle)
+
+        statusText = TextView(this).apply {
+            text = "Checking backend..."
+            textSize = 14f
+            setTextColor(Color.LTGRAY)
+            setPadding(0, 10, 0, 0)
+        }
+
+        onlineCard.addView(statusText)
+
+        rootLayout.addView(onlineCard)
+
+        val commandCard = createCard()
+
+        val commandTitle = TextView(this).apply {
+            text = "COMMAND CENTER"
+            textSize = 18f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.WHITE)
+        }
+
+        commandCard.addView(commandTitle)
+
+        commandInput = EditText(this).apply {
+            hint = "Tell UDAAN what to do..."
+            setTextColor(Color.WHITE)
+            setHintTextColor(Color.GRAY)
+            textSize = 16f
+            setSingleLine(false)
+            minLines = 2
+            setPadding(20, 15, 20, 15)
+            background = roundedBackground(
+                Color.rgb(25, 25, 35),
+                Color.rgb(70, 70, 90)
+            )
+        }
+
+        commandCard.addView(commandInput)
+
+        val executeButton = Button(this).apply {
+            text = "EXECUTE COMMAND"
+            textSize = 15f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.WHITE)
+            background = roundedBackground(
+                Color.rgb(60, 20, 110),
+                Color.rgb(130, 70, 220)
+            )
+
+            setOnClickListener {
+                val command = commandInput.text.toString().trim()
+
+                if (command.isEmpty()) {
+                    statusText.text = "Enter a command first."
+                } else {
+                    statusText.text = "UDAAN is processing..."
+                    sendCommand(command)
+                }
+            }
+        }
+
+        commandCard.addView(executeButton)
+
+        rootLayout.addView(commandCard)
+
+        addCard(
+            "AI AGENTS",
+            "Research • Content • Video • YouTube • Social • Analytics • Marketing • Developer • Automation • Creative"
+        ) {
+            showAgents()
+        }
+
+        addCard(
+            "TASKS",
+            "View active and pending UDAAN tasks"
+        ) {
+            showTasks()
+        }
+
+        addCard(
+            "CONTENT & VIDEO",
+            "Create scripts, content and video workflows"
+        ) {
+            showContent()
+        }
+
+        addCard(
+            "FOUNDER APPROVAL",
+            "Protected actions require your approval"
+        ) {
+            loadPendingApprovals()
+        }
+
+        val navigation = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(8, 20, 8, 20)
+        }
+
+        navigation.addView(
+            navButton("HOME") {
+                showCommandCenter()
+            }
+        )
+
+        navigation.addView(
+            navButton("AGENTS") {
+                showAgents()
+            }
+        )
+
+        navigation.addView(
+            navButton("TASKS") {
+                showTasks()
+            }
+        )
+
+        navigation.addView(
+            navButton("CONTENT") {
+                showContent()
+            }
+        )
+
+        rootLayout.addView(navigation)
+
+        setContentView(rootLayout)
+
+        checkBackendStatus()
+    }
+
+    private fun createRoot(title: String): LinearLayout {
+
+        val main = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(Color.rgb(7, 9, 16))
+            setPadding(18, 20, 18, 20)
+            setBackgroundColor(Color.rgb(7, 7, 15))
         }
 
         val header = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            setPadding(20, 25, 20, 15)
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
         }
 
         val logo = ImageView(this).apply {
             setImageResource(R.drawable.udaan_logo)
+            layoutParams = LinearLayout.LayoutParams(
+                58,
+                58
+            ).apply {
+                rightMargin = 14
+            }
         }
 
-        header.addView(
-            logo,
-            LinearLayout.LayoutParams(90, 90)
-        )
+        header.addView(logo)
 
         val titleView = TextView(this).apply {
-            text = "UDAAN AI\n$title"
-            textSize = 24f
+            text = title
+            textSize = 25f
             setTextColor(Color.WHITE)
-            gravity = Gravity.CENTER
+            typeface = Typeface.DEFAULT_BOLD
         }
 
         header.addView(titleView)
-        root.addView(header)
+
+        main.addView(header)
 
         val scroll = ScrollView(this)
 
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(24, 10, 24, 25)
         }
 
         scroll.addView(content)
 
-        root.addView(
+        main.addView(
             scroll,
             LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT,
                 0,
                 1f
             )
         )
 
-        root.addView(createNavigation())
+        rootLayout = content
 
-        return Pair(root, content)
+        return main
     }
 
-    private fun createNavigation(): LinearLayout {
+    private fun createCard(): LinearLayout {
 
-        val nav = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            setPadding(5, 5, 5, 5)
-        }
-
-        val buttons = listOf(
-            "Home",
-            "Agents",
-            "Tasks",
-            "Content"
-        )
-
-        buttons.forEach { name ->
-
-            val button = Button(this).apply {
-                text = name
-                textSize = 11f
-
-                setOnClickListener {
-
-                    when (name) {
-                        "Home" -> showCommandCenter()
-                        "Agents" -> showAgents()
-                        "Tasks" -> showTasks()
-                        "Content" -> showContent()
-                    }
-                }
-            }
-
-            nav.addView(
-                button,
-                LinearLayout.LayoutParams(
-                    0,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    1f
-                )
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(20, 20, 20, 20)
+            background = roundedBackground(
+                Color.rgb(15, 15, 27),
+                Color.rgb(55, 45, 90)
             )
-        }
 
-        return nav
+            val params = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+
+            params.setMargins(0, 12, 0, 12)
+
+            layoutParams = params
+        }
     }
 
-    private fun showCommandCenter() {
+    private fun addCard(
+        title: String,
+        description: String,
+        action: () -> Unit
+    ) {
 
-        val pair = createRoot("COMMAND CENTER")
+        val card = createCard()
 
-        val root = pair.first
-        val content = pair.second
-
-        commandInput = EditText(this).apply {
-            hint = "Founder command..."
-            setHintTextColor(Color.GRAY)
+        val titleView = TextView(this).apply {
+            text = title
+            textSize = 18f
             setTextColor(Color.WHITE)
-            textSize = 17f
+            typeface = Typeface.DEFAULT_BOLD
         }
 
-        content.addView(commandInput)
+        card.addView(titleView)
 
-        val execute = Button(this).apply {
-            text = "EXECUTE COMMAND"
+        val descriptionView = TextView(this).apply {
+            text = description
+            textSize = 13f
+            setTextColor(Color.LTGRAY)
+            setPadding(0, 8, 0, 12)
+        }
+
+        card.addView(descriptionView)
+
+        val button = Button(this).apply {
+            text = "OPEN"
+            setTextColor(Color.WHITE)
+            background = roundedBackground(
+                Color.rgb(30, 20, 55),
+                Color.rgb(90, 60, 140)
+            )
 
             setOnClickListener {
-                sendCommand()
+                action()
             }
         }
 
-        content.addView(execute)
+        card.addView(button)
 
-        statusText = TextView(this).apply {
-            text = "UDAAN AI CORE\nREADY"
-            textSize = 16f
+        rootLayout.addView(card)
+    }
+
+    private fun navButton(
+        text: String,
+        action: () -> Unit
+    ): Button {
+
+        return Button(this).apply {
+            this.text = text
+            textSize = 11f
             setTextColor(Color.WHITE)
-            setPadding(10, 25, 10, 25)
-        }
-
-        content.addView(statusText)
-
-        val statusButton = Button(this).apply {
-
-            text = "🔄 CHECK UDAAN AI STATUS"
+            background = roundedBackground(
+                Color.rgb(25, 20, 40),
+                Color.rgb(65, 50, 90)
+            )
 
             setOnClickListener {
-                checkBackendStatus()
+                action()
             }
-        }
 
-        content.addView(
-            statusButton,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+            layoutParams = LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
             ).apply {
-                setMargins(0, 5, 0, 15)
+                setMargins(3, 0, 3, 0)
             }
-        )
+        }
+    }
 
-        addCard(
-            content,
-            "🧠 MAIN AI",
-            "Command orchestration"
-        )
+    private fun roundedBackground(
+        fillColor: Int,
+        strokeColor: Int
+    ): GradientDrawable {
 
-        addCard(
-            content,
-            "🤖 AI AGENTS",
-            "${dynamicAgents.size} specialized AI agents"
-        )
-
-        addCard(
-            content,
-            "🎬 VIDEO STUDIO",
-            "Video creation workflow"
-        )
-
-        addCard(
-            content,
-            "📱 SOCIAL MEDIA",
-            "Social automation"
-        )
-
-        addCard(
-            content,
-            "📊 ANALYTICS",
-            "Performance analytics"
-        )
-
-        setContentView(root)
+        return GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 24f
+            setColor(fillColor)
+            setStroke(2, strokeColor)
+        }
     }
 
     private fun showAgents() {
 
-        val pair = createRoot("AI AGENTS")
+        rootLayout = createRoot("AI AGENTS")
 
-        val root = pair.first
-        val content = pair.second
-
-        val info = TextView(this).apply {
-            text = "SELECT AN AI AGENT"
-            textSize = 17f
+        val heading = TextView(this).apply {
+            text = "UDAAN AI AGENTS"
+            textSize = 25f
+            typeface = Typeface.DEFAULT_BOLD
             setTextColor(Color.WHITE)
-            setPadding(5, 10, 5, 20)
+            gravity = Gravity.CENTER
+            setPadding(10, 25, 10, 20)
         }
 
-        content.addView(info)
+        rootLayout.addView(heading)
 
         if (dynamicAgents.isEmpty()) {
 
-            val loading = TextView(this).apply {
-                text = "🔄 Loading AI Agents..."
+            val empty = TextView(this).apply {
+                text = "Loading AI Agents..."
                 textSize = 16f
-                setTextColor(Color.WHITE)
-                setPadding(5, 20, 5, 20)
+                setTextColor(Color.LTGRAY)
+                gravity = Gravity.CENTER
+                setPadding(20, 50, 20, 50)
             }
 
-            content.addView(loading)
+            rootLayout.addView(empty)
 
         } else {
 
             dynamicAgents.forEach { agent ->
 
-                val button = Button(this).apply {
+                val card = createCard()
 
-                    text =
-                        "${agent.name}\n${agent.status}"
+                val button = Button(this).apply {
+                    text = "${agent.name}\n${agent.status}"
+                    textSize = 16f
+                    setTextColor(Color.WHITE)
+                    background = roundedBackground(
+                        Color.rgb(20, 18, 35),
+                        Color.rgb(80, 60, 130)
+                    )
 
                     setOnClickListener {
                         openAgent(agent)
                     }
                 }
 
-                content.addView(
-                    button,
-                    LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        setMargins(0, 5, 0, 5)
-                    }
-                )
+                card.addView(button)
+
+                val description = TextView(this).apply {
+                    text = agent.description
+                    textSize = 13f
+                    setTextColor(Color.LTGRAY)
+                    setPadding(5, 10, 5, 5)
+                }
+
+                card.addView(description)
+
+                rootLayout.addView(card)
             }
         }
 
-        setContentView(root)
+        val back = navButton("HOME") {
+            showCommandCenter()
+        }
+
+        rootLayout.addView(back)
+
+        setContentView(rootLayout)
     }
 
     private fun openAgent(agent: UdaanAgent) {
 
-        val pair = createRoot(agent.name)
+        rootLayout = createRoot(agent.name)
 
-        val root = pair.first
-        val content = pair.second
-
-        val description = TextView(this).apply {
-
-            text =
-                "${agent.name}\n\n" +
-                "${agent.description}\n\n" +
-                "Module: ${agent.module}\n" +
-                "Status: ${agent.status}\n\n" +
-                "Available Functions: ${agent.functions.size}"
-
-            textSize = 18f
+        val title = TextView(this).apply {
+            text = agent.name
+            textSize = 28f
             setTextColor(Color.WHITE)
-            setPadding(5, 15, 5, 20)
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            setPadding(15, 30, 15, 15)
         }
 
-        content.addView(description)
+        rootLayout.addView(title)
+
+        val card = createCard()
+
+        val info = TextView(this).apply {
+            text =
+                "MODULE: ${agent.module}\n\n" +
+                "STATUS: ${agent.status}\n\n" +
+                "DESCRIPTION:\n${agent.description}\n\n" +
+                "FUNCTIONS:\n${agent.functions.joinToString("\n")}"
+
+            textSize = 14f
+            setTextColor(Color.LTGRAY)
+        }
+
+        card.addView(info)
+
+        rootLayout.addView(card)
 
         val input = EditText(this).apply {
-
-            hint = "${agent.name} command..."
-            setHintTextColor(Color.GRAY)
+            hint = "Command for ${agent.name}..."
             setTextColor(Color.WHITE)
-            textSize = 16f
+            setHintTextColor(Color.GRAY)
+            setPadding(20, 15, 20, 15)
+            background = roundedBackground(
+                Color.rgb(20, 20, 30),
+                Color.rgb(70, 60, 100)
+            )
         }
 
-        content.addView(input)
+        rootLayout.addView(input)
 
-        val run = Button(this).apply {
-
-            text = "RUN ${agent.name}"
+        val execute = Button(this).apply {
+            text = "RUN AGENT"
+            setTextColor(Color.WHITE)
+            background = roundedBackground(
+                Color.rgb(60, 20, 110),
+                Color.rgb(130, 70, 220)
+            )
 
             setOnClickListener {
 
-                val command =
-                    input.text.toString().trim()
+                val command = input.text.toString().trim()
 
-                if (command.isEmpty()) {
-
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Command empty hai",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                } else {
-
-                    commandInput =
-                        EditText(this@MainActivity)
-
-                    commandInput.setText(
-                        "${agent.name}: $command"
-                    )
-
-                    statusText =
-                        TextView(this@MainActivity).apply {
-                            text = "🧠 UDAAN AI\n\nThinking..."
-                            textSize = 16f
-                            setTextColor(Color.WHITE)
-                        }
-
-                    sendCommand()
+                if (command.isNotEmpty()) {
+                    sendCommand(command)
                 }
             }
         }
 
-        content.addView(run)
+        rootLayout.addView(execute)
 
-        setContentView(root)
+        rootLayout.addView(
+            navButton("BACK TO AGENTS") {
+                showAgents()
+            }
+        )
+
+        setContentView(rootLayout)
     }
 
     private fun showTasks() {
 
-        val pair = createRoot("TASKS")
-        val root = pair.first
-        val content = pair.second
+        rootLayout = createRoot("TASKS")
 
-        addCard(
-            content,
-            "📋 ACTIVE TASKS",
-            "Founder tasks"
+        val title = TextView(this).apply {
+            text = "UDAAN TASKS"
+            textSize = 25f
+            setTextColor(Color.WHITE)
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            setPadding(15, 30, 15, 20)
+        }
+
+        rootLayout.addView(title)
+
+        val card = createCard()
+
+        val text = TextView(this).apply {
+            text = "Task Manager\n\nActive tasks and Founder Approval tasks will appear here."
+            textSize = 16f
+            setTextColor(Color.LTGRAY)
+        }
+
+        card.addView(text)
+
+        rootLayout.addView(card)
+
+        rootLayout.addView(
+            navButton("HOME") {
+                showCommandCenter()
+            }
         )
 
-        addCard(
-            content,
-            "⏳ PENDING APPROVAL",
-            "Loading Founder Approval queue..."
-        )
-
-        addCard(
-            content,
-            "✅ COMPLETED",
-            "Completed AI tasks"
-        )
-
-        setContentView(root)
-
-        loadPendingApprovals()
+        setContentView(rootLayout)
     }
 
     private fun showContent() {
 
-        val pair = createRoot("CONTENT")
+        rootLayout = createRoot("CONTENT")
 
-        val root = pair.first
-        val content = pair.second
-
-        addCard(
-            content,
-            "✍️ CONTENT AI",
-            "Scripts, captions and posts"
-        )
-
-        addCard(
-            content,
-            "🎬 VIDEO AI",
-            "Video creation workflow"
-        )
-
-        addCard(
-            content,
-            "▶️ YOUTUBE AI",
-            "YouTube workflow"
-        )
-
-        setContentView(root)
-    }
-
-    private fun addCard(
-        parent: LinearLayout,
-        title: String,
-        description: String
-    ) {
-
-        val card = TextView(this).apply {
-
-            text = "$title\n$description"
-
-            textSize = 16f
+        val title = TextView(this).apply {
+            text = "CONTENT & VIDEO STUDIO"
+            textSize = 24f
             setTextColor(Color.WHITE)
-
-            setPadding(20, 20, 20, 20)
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            setPadding(15, 30, 15, 20)
         }
 
-        parent.addView(
-            card,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(0, 6, 0, 6)
+        rootLayout.addView(title)
+
+        addCard(
+            "CONTENT AI",
+            "Scripts, captions, ideas and content strategy"
+        ) {
+            sendCommand("Create content using Content AI")
+        }
+
+        addCard(
+            "VIDEO AI",
+            "Video production and rendering workflow"
+        ) {
+            sendCommand("Create a test video using Video AI")
+        }
+
+        addCard(
+            "YOUTUBE AI",
+            "YouTube research, upload and publishing workflow"
+        ) {
+            sendCommand("Show YouTube workflow")
+        }
+
+        addCard(
+            "SOCIAL MEDIA AI",
+            "Instagram and social media workflow"
+        ) {
+            sendCommand("Show social media workflow")
+        }
+
+        rootLayout.addView(
+            navButton("HOME") {
+                showCommandCenter()
             }
         )
+
+        setContentView(rootLayout)
     }
 
     private fun loadDynamicAgents() {
 
-        Thread {
+        val request = Request.Builder()
+            .url("$backendUrl/agents")
+            .addHeader(
+                "X-Udaan-API-Key",
+                founderApiKey
+            )
+            .get()
+            .build()
 
-            try {
+        client.newCall(request).enqueue(object : Callback {
 
-                val request =
-                    Request.Builder()
-                        .url("$backendUrl/agents")
-                        .addHeader(
-                            "X-Udaan-API-Key",
-                            founderApiKey
-                        )
-                        .get()
-                        .build()
+            override fun onFailure(
+                call: Call,
+                e: IOException
+            ) {
 
-                client.newCall(request)
-                    .execute()
-                    .use { response ->
+                runOnUiThread {
+                    statusText.text =
+                        "Agent discovery failed: ${e.message}"
+                }
+            }
 
-                        val result =
-                            response.body?.string() ?: ""
+            override fun onResponse(
+                call: Call,
+                response: Response
+            ) {
 
-                        if (!response.isSuccessful) {
-                            return@use
-                        }
+                val body = response.body?.string()
 
-                        val json =
-                            JSONObject(result)
+                if (!response.isSuccessful || body == null) {
 
-                        val agentArray =
-                            json.optJSONArray("agents")
-                                ?: JSONArray()
+                    runOnUiThread {
+                        statusText.text =
+                            "Agent discovery failed: HTTP ${response.code}"
+                    }
 
-                        val loadedAgents =
-                            mutableListOf<UdaanAgent>()
+                    return
+                }
 
-                        for (i in 0 until agentArray.length()) {
+                try {
 
-                            val agent =
-                                agentArray.getJSONObject(i)
+                    val json = JSONObject(body)
+                    val array = json.optJSONArray("agents")
+
+                    val newAgents = mutableListOf<UdaanAgent>()
+
+                    if (array != null) {
+
+                        for (i in 0 until array.length()) {
+
+                            val item = array.getJSONObject(i)
 
                             val functions =
                                 mutableListOf<String>()
 
                             val functionArray =
-                                agent.optJSONArray("functions")
+                                item.optJSONArray("functions")
 
                             if (functionArray != null) {
 
                                 for (j in 0 until functionArray.length()) {
-
                                     functions.add(
-                                        functionArray.getString(j)
+                                        functionArray.optString(j)
                                     )
                                 }
                             }
 
-                            loadedAgents.add(
+                            newAgents.add(
                                 UdaanAgent(
-                                    name = agent.optString("name"),
-                                    module = agent.optString("module"),
-                                    description =
-                                        agent.optString("description"),
-                                    status =
-                                        agent.optString("status"),
+                                    name = item.optString("name"),
+                                    module = item.optString("module"),
+                                    description = item.optString("description"),
+                                    status = item.optString("status"),
                                     functions = functions
                                 )
                             )
                         }
-
-                        runOnUiThread {
-
-                            dynamicAgents.clear()
-                            dynamicAgents.addAll(
-                                loadedAgents
-                            )
-                        }
                     }
 
-            } catch (_: Exception) {
-                // Backend unavailable.
-            }
+                    runOnUiThread {
 
-        }.start()
+                        dynamicAgents.clear()
+                        dynamicAgents.addAll(newAgents)
+
+                        statusText.text =
+                            "UDAAN CORE ONLINE • ${dynamicAgents.size} AI Agents detected"
+                    }
+
+                } catch (e: Exception) {
+
+                    runOnUiThread {
+                        statusText.text =
+                            "Agent data error: ${e.message}"
+                    }
+                }
+            }
+        })
     }
 
-    private fun sendCommand() {
+    private fun sendCommand(command: String) {
 
-        val command =
-            commandInput.text.toString().trim()
-
-        if (command.isEmpty()) {
-
-            Toast.makeText(
-                this,
-                "Founder command empty hai",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            return
+        val json = JSONObject().apply {
+            put("command", command)
         }
 
-        statusText.text =
-            "🧠 UDAAN AI\n\nThinking..."
+        val requestBody =
+            RequestBody.create(
+                MediaType.parse("application/json"),
+                json.toString()
+            )
 
-        Thread {
+        val request = Request.Builder()
+            .url("$backendUrl/command")
+            .addHeader(
+                "X-Udaan-API-Key",
+                founderApiKey
+            )
+            .post(requestBody)
+            .build()
 
-            try {
+        client.newCall(request).enqueue(object : Callback {
 
-                val json =
-                    JSONObject()
-                        .put("command", command)
+            override fun onFailure(
+                call: Call,
+                e: IOException
+            ) {
+
+                runOnUiThread {
+                    statusText.text =
+                        "Backend connection failed: ${e.message}"
+                }
+            }
+
+            override fun onResponse(
+                call: Call,
+                response: Response
+            ) {
 
                 val body =
-                    json.toString()
-                        .toRequestBody(
-                            "application/json".toMediaType()
-                        )
-
-                val request =
-                    Request.Builder()
-                        .url("$backendUrl/command")
-                        .addHeader(
-                            "X-Udaan-API-Key",
-                            founderApiKey
-                        )
-                        .post(body)
-                        .build()
-
-                client.newCall(request)
-                    .execute()
-                    .use { response ->
-
-                        val result =
-                            response.body?.string() ?: ""
-
-                        runOnUiThread {
-
-                            if (!response.isSuccessful) {
-
-                                statusText.text =
-                                    "❌ BACKEND ERROR\n\n" +
-                                    "HTTP ${response.code}\n\n" +
-                                    result
-
-                                return@runOnUiThread
-                            }
-
-                            try {
-
-                                val jsonResult =
-                                    JSONObject(result)
-
-                                val status =
-                                    jsonResult.optString(
-                                        "status",
-                                        "UNKNOWN"
-                                    )
-
-                                val agent =
-                                    jsonResult.optString(
-                                        "agent",
-                                        "Main AI"
-                                    )
-
-                                val message =
-                                    jsonResult.optString(
-                                        "message",
-                                        result
-                                    )
-
-                                when (status) {
-
-                                    "SUCCESS" -> {
-
-                                        statusText.text =
-                                            "✅ UDAAN AI\n\n" +
-                                            "STATUS: SUCCESS\n\n" +
-                                            "Agent: $agent\n\n" +
-                                            message
-                                    }
-
-                                    "PENDING_APPROVAL",
-                                    "WAITING_APPROVAL",
-                                    "READY_FOR_APPROVAL" -> {
-
-                                        val approvalId =
-                                            jsonResult.optString(
-                                                "approval_id",
-                                                ""
-                                            )
-
-                                        statusText.text =
-                                            "👑 FOUNDER APPROVAL REQUIRED\n\n" +
-                                            "Agent: $agent\n\n" +
-                                            message +
-                                            if (approvalId.isNotEmpty()) {
-                                                "\n\nApproval ID:\n$approvalId"
-                                            } else {
-                                                ""
-                                            }
-                                    }
-
-                                    "FAILED" -> {
-
-                                        statusText.text =
-                                            "❌ UDAAN AI\n\n" +
-                                            "STATUS: FAILED\n\n" +
-                                            message
-                                    }
-
-                                    else -> {
-
-                                        statusText.text =
-                                            "🤖 UDAAN AI RESPONSE\n\n" +
-                                            "STATUS: $status\n\n" +
-                                            "Agent: $agent\n\n" +
-                                            message
-                                    }
-                                }
-
-                            } catch (error: Exception) {
-
-                                statusText.text =
-                                    "🤖 UDAAN AI RESPONSE\n\n$result"
-                            }
-                        }
-                    }
-
-            } catch (error: Exception) {
+                    response.body?.string()
+                        ?: ""
 
                 runOnUiThread {
 
-                    statusText.text =
-                        "❌ BACKEND CONNECTION FAILED\n\n" +
-                        "${error.message}"
+                    if (response.isSuccessful) {
+
+                        statusText.text =
+                            "UDAAN RESPONSE:\n$body"
+
+                    } else {
+
+                        statusText.text =
+                            "Command failed: HTTP ${response.code}\n$body"
+                    }
                 }
             }
-        }.start()
+        })
     }
 
     private fun loadPendingApprovals() {
 
-        Toast.makeText(
-            this,
-            "Pending approvals loading...",
-            Toast.LENGTH_SHORT
-        ).show()
+        val request = Request.Builder()
+            .url("$backendUrl/approvals")
+            .addHeader(
+                "X-Udaan-API-Key",
+                founderApiKey
+            )
+            .get()
+            .build()
 
-        Thread {
+        client.newCall(request).enqueue(object : Callback {
 
-            try {
-
-                val request =
-                    Request.Builder()
-                        .url("$backendUrl/approvals")
-                        .addHeader(
-                            "X-Udaan-API-Key",
-                            founderApiKey
-                        )
-                        .get()
-                        .build()
-
-                client.newCall(request)
-                    .execute()
-                    .use { response ->
-
-                        val result =
-                            response.body?.string() ?: ""
-
-                        runOnUiThread {
-
-                            if (!response.isSuccessful) {
-
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    "Approval API Error: HTTP ${response.code}",
-                                    Toast.LENGTH_LONG
-                                ).show()
-
-                                return@runOnUiThread
-                            }
-
-                            try {
-
-                                val json =
-                                    JSONObject(result)
-
-                                val approvals =
-                                    json.optJSONArray("approvals")
-                                        ?: JSONArray()
-
-                                if (approvals.length() == 0) {
-
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        "No pending approvals",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-
-                                } else {
-
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        "${approvals.length()} pending approval(s)",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-
-                            } catch (error: Exception) {
-
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    "Approval response received",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                    }
-
-            } catch (error: Exception) {
+            override fun onFailure(
+                call: Call,
+                e: IOException
+            ) {
 
                 runOnUiThread {
-
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Approval connection failed: ${error.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    statusText.text =
+                        "Approval connection failed."
                 }
             }
-        }.start()
-    }
 
-    private fun checkBackendStatus() {
+            override fun onResponse(
+                call: Call,
+                response: Response
+            ) {
 
-        statusText.text =
-            "🔄 UDAAN AI\n\nChecking backend..."
-
-        Thread {
-
-            try {
-
-                val request =
-                    Request.Builder()
-                        .url("$backendUrl/status")
-                        .addHeader(
-                            "X-Udaan-API-Key",
-                            founderApiKey
-                        )
-                        .get()
-                        .build()
-
-                client.newCall(request)
-                    .execute()
-                    .use { response ->
-
-                        val result =
-                            response.body?.string() ?: ""
-
-                        runOnUiThread {
-
-                            if (response.isSuccessful) {
-
-                                try {
-
-                                    val json =
-                                        JSONObject(result)
-
-                                    statusText.text =
-                                        "🟢 UDAAN AI ONLINE\n\n" +
-                                        "Backend: ONLINE\n" +
-                                        "Core: " +
-                                        json.optString(
-                                            "core_state",
-                                            "UNKNOWN"
-                                        )
-
-                                } catch (error: Exception) {
-
-                                    statusText.text =
-                                        "🟢 UDAAN AI ONLINE\n\n$result"
-                                }
-
-                            } else {
-
-                                statusText.text =
-                                    "❌ BACKEND ERROR\n\n" +
-                                    "HTTP ${response.code}\n\n" +
-                                    result
-                            }
-                        }
-                    }
-
-            } catch (error: Exception) {
+                val body =
+                    response.body?.string()
+                        ?: ""
 
                 runOnUiThread {
 
                     statusText.text =
-                        "❌ BACKEND CONNECTION FAILED\n\n" +
-                        "${error.message}"
+                        if (response.isSuccessful) {
+                            "FOUNDER APPROVALS:\n$body"
+                        } else {
+                            "Approval request failed: HTTP ${response.code}"
+                        }
                 }
             }
-        }.start()
+        })
+    }
+
+    private fun checkBackendStatus() {
+
+        val request = Request.Builder()
+            .url("$backendUrl/health")
+            .addHeader(
+                "X-Udaan-API-Key",
+                founderApiKey
+            )
+            .get()
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+
+            override fun onFailure(
+                call: Call,
+                e: IOException
+            ) {
+
+                runOnUiThread {
+                    statusText.text =
+                        "● BACKEND OFFLINE"
+                }
+            }
+
+            override fun onResponse(
+                call: Call,
+                response: Response
+            ) {
+
+                runOnUiThread {
+
+                    if (response.isSuccessful) {
+                        statusText.text =
+                            "● UDAAN CORE ONLINE"
+                    } else {
+                        statusText.text =
+                            "● BACKEND ERROR: ${response.code}"
+                    }
+                }
+            }
+        })
     }
 }
