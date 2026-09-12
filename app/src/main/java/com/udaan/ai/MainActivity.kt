@@ -293,7 +293,7 @@ class MainActivity : AppCompatActivity() {
 
         val input = EditText(this).apply {
             hint = "e.g. Create a YouTube video on AI"
-            hintTextColor = Color.parseColor("#627895")
+            setHintTextColor(Color.parseColor("#627895"))
             setTextColor(Color.WHITE)
             textSize = 13f
             setPadding(14, 8, 14, 8)
@@ -527,7 +527,7 @@ class MainActivity : AppCompatActivity() {
 
         val input = EditText(this).apply {
             hint = "Is agent ko command do..."
-            hintTextColor = Color.parseColor("#627895")
+            setHintTextColor(Color.parseColor("#627895"))
             setTextColor(Color.WHITE)
             setPadding(14, 12, 14, 12)
             background = gradient(
