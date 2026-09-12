@@ -241,7 +241,7 @@ class MainActivity : AppCompatActivity() {
 
         hero.addView(
             UdaanOrbView(this),
-            FrameLayout.LayoutParams(
+            android.widget.FrameLayout.LayoutParams(
                 235,
                 205,
                 Gravity.END or Gravity.CENTER_VERTICAL
