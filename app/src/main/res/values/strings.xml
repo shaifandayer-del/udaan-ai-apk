@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">UDAAN AI</string>
+    <string name="app_subtitle">AI COMMAND CENTER</string>
+    <string name="command_hint">Tell UDAAN what to do...</string>
+    <string name="execute_command">⚡ EXECUTE COMMAND</string>
+
+</resources>
