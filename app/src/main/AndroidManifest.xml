@@ -7,7 +7,9 @@
     <application
         android:theme="@style/AppTheme"
         android:label="UDAAN AI"
-        android:allowBackup="true">
+        android:allowBackup="true"
+       android:icon="@drawable/udaan_logo"
+android:roundIcon="@drawable/udaan_logo" >
 
         <activity
             android:name=".MainActivity"
