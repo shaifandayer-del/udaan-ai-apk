@@ -131,8 +131,125 @@ class MainActivity : AppCompatActivity() {
             "Your Personal AI Command Center"
         )
 
-        addFuturisticHero()
+        private fun addFuturisticHero() {
+    val hero = FrameLayout(this).apply {
+        background = gradient("#061D42", "#020817", 28)
+        setPadding(10, 10, 10, 10)
+    }
 
+    val orbParams =
+        android.widget.FrameLayout.LayoutParams(
+            235,
+            205
+        ).apply {
+            gravity = Gravity.END or Gravity.CENTER_VERTICAL
+        }
+
+    hero.addView(
+        UdaanOrbView(this),
+        orbParams
+    )
+
+    val glowLabel = TextView(this).apply {
+        text = "● AI CORE ONLINE"
+        textSize = 8f
+        setTextColor(Color.parseColor("#00E8FF"))
+        typeface = Typeface.DEFAULT_BOLD
+    }
+
+    val glowParams =
+        android.widget.FrameLayout.LayoutParams(
+            -2,
+            -2
+        ).apply {
+            gravity = Gravity.TOP or Gravity.END
+            topMargin = 10
+            rightMargin = 14
+        }
+
+    hero.addView(
+        glowLabel,
+        glowParams
+    )
+
+    val textBox = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        gravity = Gravity.CENTER_VERTICAL
+        setPadding(14, 4, 0, 4)
+    }
+
+    textBox.addView(
+        TextView(this).apply {
+            text = "WELCOME BACK"
+            textSize = 9f
+            setTextColor(Color.parseColor("#7FA8D8"))
+            typeface = Typeface.DEFAULT_BOLD
+        }
+    )
+
+    textBox.addView(
+        TextView(this).apply {
+            text = "Founder"
+            textSize = 29f
+            setTextColor(Color.WHITE)
+            typeface = Typeface.DEFAULT_BOLD
+        }
+    )
+
+    textBox.addView(
+        TextView(this).apply {
+            text = "What shall we create today?"
+            textSize = 11f
+            setTextColor(Color.parseColor("#A8BEDD"))
+            setPadding(0, 4, 0, 10)
+        }
+    )
+
+    textBox.addView(
+        Button(this).apply {
+            text = "⚡  TAP TO START"
+            textSize = 9f
+            setTextColor(Color.WHITE)
+            background = gradient(
+                "#008DFF",
+                "#733CFF",
+                18
+            )
+
+            setOnClickListener {
+                showCommandCenter()
+            }
+        },
+        LinearLayout.LayoutParams(
+            145,
+            45
+        )
+    )
+
+    val textParams =
+        android.widget.FrameLayout.LayoutParams(
+            190,
+            -1
+        ).apply {
+            gravity = Gravity.START or Gravity.CENTER_VERTICAL
+        }
+
+    hero.addView(
+        textBox,
+        textParams
+    )
+
+    content.addView(
+        hero,
+        LinearLayout.LayoutParams(
+            -1,
+            210
+        ).apply {
+            bottomMargin = 14
+        }
+    )
+}
+    
         addSection("UDAAN AI CORE")
 
         addInfoCard(
