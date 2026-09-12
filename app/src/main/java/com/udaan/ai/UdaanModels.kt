@@ -1,11 +1,5 @@
 package com.udaan.ai
 
-data class UdaanAgent(
-    val name: String,
-    val description: String,
-    val status: String
-)
-
 data class UdaanTask(
     val id: String,
     val title: String,
