@@ -131,7 +131,7 @@ class MainActivity : AppCompatActivity() {
             "Your Personal AI Command Center"
         )
 
-        private fun addFuturisticHero() {
+        private fun addCommandBox() {
     val hero = FrameLayout(this).apply {
         background = gradient("#061D42", "#020817", 28)
         setPadding(10, 10, 10, 10)
