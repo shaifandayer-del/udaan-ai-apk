@@ -114,11 +114,13 @@ class MainActivity : AppCompatActivity() {
 
         scroll.addView(
             content,
-            android.widget.FrameLayout.LayoutParams(
-        )
-
-        root.addView(
-            scroll,
+            val orbParams =
+    android.widget.FrameLayout.LayoutParams(
+        235,
+        205
+    ).apply {
+        gravity = Gravity.END or Gravity.CENTER_VERTICAL
+    }
             LinearLayout.LayoutParams(-1, 0, 1f)
         )
 
