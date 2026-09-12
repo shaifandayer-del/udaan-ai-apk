@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
             setPadding(14, 4, 14, 20)
         }
 
-        scroll.addView(content, ScrollView.LayoutParams(-1, -2))
+        scroll.addView(content, ScrollView.LayoutParams(-1, -2)
 
         root.addView(
             scroll,
