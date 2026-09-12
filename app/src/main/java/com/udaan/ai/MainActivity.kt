@@ -1,4 +1,3 @@
-MainActivity.kt
 
 package com.udaan.ai
 
