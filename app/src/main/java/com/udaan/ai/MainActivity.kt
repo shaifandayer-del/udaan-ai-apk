@@ -1,4 +1,3 @@
-app/src/main/java/com/udaan/ai/MainActivity.kt
 
 package com.udaan.ai
 
