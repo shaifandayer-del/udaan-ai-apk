@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout UDAAN AI
         uses: actions/checkout@v4
 
       - name: Setup Java 17
@@ -25,10 +25,34 @@ jobs:
         with:
           gradle-version: "8.7"
 
-      - name: Build APK
+      - name: Verify UDAAN Android Project
+        run: |
+          test -f settings.gradle
+          test -f build.gradle
+          test -f gradle.properties
+          test -f app/build.gradle
+          test -f app/src/main/AndroidManifest.xml
+          test -f app/src/main/java/com/udaan/ai/MainActivity.kt
+          test -f app/src/main/res/drawable/udaan_logo.xml
+          echo "UDAAN Android project structure verified."
+
+      - name: Clean Build
         env:
           UDAAN_FOUNDER_API_KEY: ${{ secrets.UDAAN_FOUNDER_API_KEY }}
-        run: gradle assembleDebug --no-daemon
+        run: |
+          gradle clean --no-daemon
+
+      - name: Build UDAAN AI APK
+        env:
+          UDAAN_FOUNDER_API_KEY: ${{ secrets.UDAAN_FOUNDER_API_KEY }}
+        run: |
+          gradle assembleDebug --no-daemon
+
+      - name: Verify APK
+        run: |
+          test -f app/build/outputs/apk/debug/app-debug.apk
+          ls -lh app/build/outputs/apk/debug/app-debug.apk
+          echo "UDAAN AI APK generated successfully."
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
