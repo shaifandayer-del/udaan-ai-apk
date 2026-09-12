@@ -112,12 +112,7 @@ class MainActivity : AppCompatActivity() {
             setPadding(14, 4, 14, 20)
         }
 
-        private fun addFuturisticHero() {
-    val hero = FrameLayout(this).apply {
-        background = gradient("#061D42", "#020817", 28)
-        setPadding(10, 10, 10, 10)
-    }
-
+        }
     val orbParams = android.widget.FrameLayout.LayoutParams(235, 205).apply {
         gravity = Gravity.END or Gravity.CENTER_VERTICAL
     }
