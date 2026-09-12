@@ -225,7 +225,8 @@ class MainActivity : AppCompatActivity() {
 
         val input = EditText(this).apply {
             hint = "Tell UDAAN what to do..."
-            hintTextColor = Color.rgb(110, 110, 130)
+        
+        setHintTextColor(110, 110, 130)
             setTextColor(white)
             textSize = 16f
             setSingleLine(false)
@@ -338,7 +339,7 @@ class MainActivity : AppCompatActivity() {
 
         val input = EditText(this).apply {
             hint = "Command for ${agent.name}"
-            hintTextColor = Color.GRAY
+            setHintTextColor = Color.GRAY
             setTextColor(white)
             textSize = 16f
             minLines = 3
