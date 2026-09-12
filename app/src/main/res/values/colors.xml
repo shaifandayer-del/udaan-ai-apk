@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="udaan_background">#07070F</color>
+    <color name="udaan_surface">#10101C</color>
+    <color name="udaan_card">#151526</color>
+
+    <color name="udaan_primary">#8A4DFF</color>
+    <color name="udaan_secondary">#00D9FF</color>
+
+    <color name="udaan_success">#00E676</color>
+    <color name="udaan_warning">#FFB300</color>
+    <color name="udaan_error">#FF4D6D</color>
+
+    <color name="udaan_text_primary">#FFFFFF</color>
+    <color name="udaan_text_secondary">#A9A9C2</color>
+
+</resources>
