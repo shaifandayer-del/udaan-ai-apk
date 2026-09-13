@@ -179,7 +179,7 @@ class MainActivity : AppCompatActivity() {
 
         scroll.addView(
             content,
-            ScrollView.LayoutParams(
+            ScrollView.FrameLayout.LayoutParams
                 -1,
                 -2
             )
