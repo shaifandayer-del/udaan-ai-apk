@@ -1,115 +1,126 @@
-Orchestrator.py
-
-import datetime
-import json
-
 from AgentConnector import execute_agent
 
 
-AGENTS = {
-    "research": "Research",
-    "content": "Content",
-    "video": "Video",
-    "youtube": "YouTube",
-    "social": "Social",
-    "analytics": "Analytics",
-    "marketing": "Marketing",
-    "developer": "Developer",
-    "automation": "Automation",
-    "creative": "Creative",
-}
-
-
-def _find_agent(agent_name):
-    name = str(agent_name or "").strip().lower()
-
-    if name in AGENTS:
-        return AGENTS[name]
-
-    for key, value in AGENTS.items():
-        if key in name or value.lower() in name:
-            return value
-
-    return None
-
-
-def orchestrate(agent_name, command):
+def execute_command(command, agent=None):
     command = str(command or "").strip()
 
     if not command:
         return {
             "status": "FAILED",
-            "agent": "Orchestrator",
             "message": "Command is empty."
         }
 
-    selected_agent = _find_agent(agent_name)
+    selected_agent = agent
 
     if not selected_agent:
-        return {
-            "status": "FAILED",
-            "agent": "Orchestrator",
-            "message": "Unknown agent: " + str(agent_name)
-        }
+        text = command.lower()
 
-    try:
-        result = execute_agent(
-            selected_agent,
-            command
-        )
+        if any(word in text for word in [
+            "research",
+            "search",
+            "research karo"
+        ]):
+            selected_agent = "Research"
 
-        if isinstance(result, dict):
-            return {
-                "status": result.get("status", "FAILED"),
-                "agent": selected_agent,
-                "command": command,
-                "result": result,
-                "created_at": datetime.datetime.now().isoformat()
-            }
+        elif any(word in text for word in [
+            "video",
+            "movie",
+            "reel"
+        ]):
+            selected_agent = "Video"
 
-        return {
-            "status": "FAILED",
+        elif any(word in text for word in [
+            "content",
+            "script",
+            "article",
+            "blog"
+        ]):
+            selected_agent = "Content"
+
+        elif any(word in text for word in [
+            "youtube"
+        ]):
+            selected_agent = "YouTube"
+
+        elif any(word in text for word in [
+            "instagram",
+            "social",
+            "post"
+        ]):
+            selected_agent = "Social"
+
+        elif any(word in text for word in [
+            "creative",
+            "design",
+            "idea"
+        ]):
+            selected_agent = "Creative"
+
+        elif any(word in text for word in [
+            "analytics",
+            "analysis",
+            "data"
+        ]):
+            selected_agent = "Analytics"
+
+        elif any(word in text for word in [
+            "marketing",
+            "marketing plan"
+        ]):
+            selected_agent = "Marketing"
+
+        elif any(word in text for word in [
+            "developer",
+            "code",
+            "app",
+            "software"
+        ]):
+            selected_agent = "Developer"
+
+        elif any(word in text for word in [
+            "automation",
+            "automate"
+        ]):
+            selected_agent = "Automation"
+
+        else:
+            selected_agent = "Content"
+
+    result = execute_agent(
+        selected_agent,
+        command
+    )
+
+    if not isinstance(result, dict):
+        result = {
+            "status": "SUCCESS",
             "agent": selected_agent,
-            "command": command,
-            "message": "Agent returned an invalid result."
+            "result": result
         }
 
-    except Exception as error:
-        return {
-            "status": "FAILED",
-            "agent": selected_agent,
-            "command": command,
-            "message": str(error),
-            "created_at": datetime.datetime.now().isoformat()
-        }
+    result.setdefault(
+        "agent",
+        selected_agent
+    )
+
+    result.setdefault(
+        "command",
+        command
+    )
+
+    return result
 
 
-def route(agent_name, command):
-    return orchestrate(agent_name, command)
-
-
-def run(agent_name, command):
-    return orchestrate(agent_name, command)
-
-
-def execute(agent_name, command):
-    return orchestrate(agent_name, command)
-
-
-def process(agent_name, command):
-    return orchestrate(agent_name, command)
-
-
-def handle(agent_name, command):
-    return orchestrate(agent_name, command)
+def run(command, agent=None):
+    return execute_command(
+        command,
+        agent
+    )
 
 
 if __name__ == "__main__":
-    agent = input("Agent: ")
-    command = input("Command: ")
-
-    print(json.dumps(
-        orchestrate(agent, command),
-        ensure_ascii=False,
-        indent=2
-    ))
+    print(
+        execute_command(
+            "UDAAN AI test command"
+        )
+    )
