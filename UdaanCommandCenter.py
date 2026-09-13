@@ -118,10 +118,15 @@ def run_agent(command=""):
 
 
 def get_status():
- def get_command_center_status():
     return command_center.get_status()
-    
+
+
+def get_command_center_status():
+    return command_center.get_status()
+
+
 if __name__ == "__main__":
+
     print(
         json.dumps(
             command_center.get_status(),
