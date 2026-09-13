@@ -14,7 +14,11 @@ object UdaanApiClient {
         "https://udaan-ai-apk-1.onrender.com"
 
     private val client =
-        OkHttpClient()
+    OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(120, TimeUnit.SECONDS)
+        .writeTimeout(120, TimeUnit.SECONDS)
+        .build()
 
     fun get(
         path: String,
