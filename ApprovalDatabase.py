@@ -165,7 +165,8 @@ def get_pending_approvals():
 
 def get_pending_approvals_from_db():
     return get_pending_approvals()
-
+def get_pending_approvals_db():
+    return get_pending_approvals()
 
 def approve_approval(approval_id):
     return update_approval(
