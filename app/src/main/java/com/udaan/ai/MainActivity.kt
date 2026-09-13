@@ -177,13 +177,7 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-       scroll.addView(
-    content,
-    android.widget.ScrollView.LayoutParams(
-        -1,
-        -2
-    )
-)
+       scroll.addView(content)
 
 root.addView(
     scroll,
