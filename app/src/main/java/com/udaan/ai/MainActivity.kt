@@ -40,7 +40,12 @@ class MainActivity : AppCompatActivity() {
         val status: String = "UNKNOWN"
     )
 
-    private val client = OkHttpClient()
+    private val client =
+    OkHttpClient.Builder()
+        .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .readTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
+        .writeTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
+        .build()
     private val baseUrl = "https://udaan-ai-apk-1.onrender.com"
 
     private val apiKey: String
