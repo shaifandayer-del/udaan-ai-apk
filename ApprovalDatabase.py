@@ -214,6 +214,11 @@ def update_approval(
 
     return updated
 
+def update_approval_status(approval_id, status):
+    return update_approval(
+        approval_id,
+        status
+    )
 
 def delete_approval(approval_id):
     approvals = _load()
