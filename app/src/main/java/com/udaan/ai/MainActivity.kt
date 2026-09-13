@@ -178,21 +178,20 @@ class MainActivity : AppCompatActivity() {
         }
 
         scroll.addView(
-            content,
-            ScrollView.FrameLayout.LayoutParams
-                -1,
-                -2
-            )
-        )
+    content,
+    ScrollView.LayoutParams(
+        -1,
+        -2
+    )
+)
 
-        root.addView(
-            scroll,
-            LinearLayout.LayoutParams(
-                -1,
-                0,
-                1f
-            )
-        )
+root.addView(
+    scroll,
+    FrameLayout.LayoutParams(
+        -1,
+        -1
+    )
+)
 
         addBottomNavigation()
 
