@@ -46,6 +46,99 @@ class MainActivity : AppCompatActivity() {
         .readTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
         .writeTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
         .build()
+private fun sendCommand(
+    command: String
+) {
+    if (apiKey.isEmpty()) {
+        showResult(
+            "UDAAN Security",
+            "Founder API Key configured nahi hai."
+        )
+        return
+    }
+
+    updateStatus(
+        "● PROCESSING...",
+        "#FFB300"
+    )
+
+    val body =
+        JSONObject().apply {
+            put("command", command)
+        }
+            .toString()
+            .toRequestBody(
+                "application/json".toMediaType()
+            )
+
+    val request =
+        Request.Builder()
+            .url("$baseUrl/command")
+            .addHeader(
+                "X-Udaan-API-Key",
+                apiKey
+            )
+            .post(body)
+            .build()
+
+    client.newCall(request).enqueue(
+        object : Callback {
+
+            override fun onFailure(
+                call: Call,
+                e: IOException
+            ) {
+                runOnUiThread {
+                    updateStatus(
+                        "● BACKEND FAILED",
+                        "#FF4D6D"
+                    )
+
+                    showResult(
+                        "Backend Connection Failed",
+                        e.message
+                            ?: "Network error"
+                    )
+                }
+            }
+
+            override fun onResponse(
+                call: Call,
+                response: Response
+            ) {
+                response.use {
+                    val result =
+                        it.body?.string()
+                            ?: ""
+
+                    runOnUiThread {
+                        if (it.isSuccessful) {
+                            updateStatus(
+                                "● COMMAND COMPLETED",
+                                "#00F5A0"
+                            )
+
+                            showResult(
+                                "UDAAN AI Result",
+                                prettyJson(result)
+                            )
+                        } else {
+                            updateStatus(
+                                "● COMMAND FAILED",
+                                "#FF4D6D"
+                            )
+
+                            showResult(
+                                "UDAAN AI Error",
+                                prettyJson(result)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    )
+}
     private val baseUrl = "https://udaan-ai-apk-1.onrender.com"
 
     private val apiKey: String
